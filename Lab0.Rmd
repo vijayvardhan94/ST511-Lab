@@ -1,0 +1,150 @@
+---
+title: 'ST 411/511 Lab 0: R, RStudio, and R Markdown Basics'
+output:
+  html_notebook: default
+  word_document: default
+---
+
+## First Steps in R and RStudio
+
+### What is R?
+
+"R is a free software environment for statistical computing and graphics" (taken from the R project page at  https://www.r-project.org).  R is the software you'll use to help you work with data throughout this course and the other courses in this sequence (ST411/511, ST412/512, ST413/513). 
+
+Every installation of R has a base package that contains quite a bit of functionality for performing data analysis. You can load additional packages into your installation of R, and these packages will give you more advanced functionality and/or access to additional datasets. For example, there's a **Sleuth3** package that contains all of the case study and exercise datasets from *The Statistical Sleuth*.
+
+R is a programming environment with a lot of built-in functions for performing data analysis. You can enter commands directly into the R Console window; you can build an R script and execute it line by line or all at once; or, you can build an R Markdown document that includes both executable R commands and text. What you're reading right now is an R markdown file (more on this below).
+
+### What is RStudio?
+
+RStudio is an open source editor for R (for more information see https://www.rstudio.com), and it wraps around R to make R a little more user-friendly. There are several different panes within RStudio. The pane where you're reading this is the Script pane. There is also a Console panel that has the R command line prompt, a greater-than sign (>). 
+
+There are two other panes -- the "Global Environment" pane contains a list of objects that you open or create in R. There's probably nothing there now, but you'll see some things pop up in there later in this lab. The final pane allows you to tab through several options -- Files, Plots, Packages, Help, and Viewer. You'll see more detail about each of these as you work through this lab. 
+
+You can change the layout of the panes if you want using the RStudio Preferences menu.
+
+### What is R Markdown?
+
+This document is written in [R Markdown](http://rmarkdown.rstudio.com).  It integrates text, code (R commands), and output in an interactive, flexible, human-and-machine-readable format.  All labs for this course are written in R markdown, and the homework assignments you'll be asked to turn in are documents that you can generate using R markdown.
+
+The core of an R Markdown document is an Rmd (*R Markdown*) script -- what you're reading right now in the Script pane in RStudio.  The Rmd format improves on a regular R script in that:
+
+1. The Rmd script features independent "chunks" of code that can be evaluated separately.  
+2. The text outside the code chunks is interpreted as Markdown-formatted text, rather than code. 
+
+This is how the Markdown file interweaves code, output, graphics and text. The Rmd script can give rise to formatted text documents (Word, LaTeX, PDF, HTML) with embedded code and code outputs. In this lab you'll see how to create your own R Markdown documents.  
+
+### How Do I Use It?
+
+You can view the R notebook as a fully-interactive R script, as standalone text document, or as a "splitscreen" combination within RStudio.  Since the labs are intended to be used interactively, I assume that you will be viewing the notebook in the RStudio environment, and probably here in the Script pane.  
+
+### Viewing HTML 
+
+Within RStudio, you generate an HTML preview from the Rmd script by clicking the "Preview" icon in the menu for the current RStudio tab (at the top of this pane). By default, the preview will appear in the RStudio Viewer pane so that you can see the two versions (Rmd and HTML) side by side. If the preview doesn't appear (or pops out in its own window), check the preview settings, in the dropdown menu from the gear icon next to the Preview icon at the top of the Script pane.  
+
+The HTML preview will contain text and code, as well as the output of any code chunks that were run *before* the preview was created.  You can refresh the preview at any time without affecting the script. 
+
+> Click "Preview" now. The resulting HTML preview will not contain the output from any of the chunks of R code in this document because you haven't executed those chunks yet. You'll continue to work with the text and code in the Script pane, and you can continue to click Preview if you want to update the HTML.
+
+Look at the HTML preview and glance over the text you've already read in the Script pane. Notice how the compiler has used some of the simple formatting (like the '###' for section headings, '*' for italics, numbering, and indented quotes) to display the script as a formatted HTML document.
+
+### Navigation 
+
+You can view a list of RStudio keyboard shortcuts from the RStudio Help menu -- Keyboard Shortcuts Help).  The command sequences on the Windows, IOS, and Linux platforms can be slightly different. If you want to use these navigation shortcuts, please familiarize yourself with what's appropriate for your operating system.
+
+Keyboard shortcuts can make your work go quicker, but are not required to do analysis.
+
+### Chunks
+
+You place R code inside an R Markdown file in what is called a "chunk". This tells the compiler that it should interpret the chunk as code, not text. "Chunks" in the R Markdown file are delimited by three backticks (or single quotes). For example, below is a chunk of R code.  
+
+> Execute the code chunk by clicking inside the chunk to place your cursor there (i.e., in the light gray area in the Script pane) and pressing *Ctrl+Shift+Enter*, or by clicking the green arrow in the upper right corner of the chunk. A plot should be displayed below the code chunk showing Time on the x-axis and Air Passengers on the y-axis. (You can get rid of the image that appears by clicking on the "x" in upper right hand corner of the image.)
+
+
+```{r}
+plot(AirPassengers)
+```
+
+When you execute a code chunk in an R Notebook, the result appears inline directly beneath chunk. If you did not see a plot appear beneath the chunk when you execute it, you may need to [update RStudio](http://www.rstudio.com/products/rstudio/download/).
+
+If you would like to see the executed R code appear in the HTML preview in the right hand panel, after executing the chunk, click Preview again to refresh the HTML. (If you already closed the plot using the x in the upper right corner, you'll need to re-run the code chunk first for it to appear in the Preview.) Over in the HTML preview, you'll see the plot of AirPassengers over time, and you'll see the R code that created that plot. You have the option in the HTML preview to hide that code if you want by clicking the "Hide" button that appears above the code in the HTML preview. You can have the HTML preview automatically *exclude* the R code by typing {r,echo=F}, instead of simply {r} at the beginning of the chunk of R code. Go ahead and try this if you want, remembering that you have to execute the chunk and then refresh the Preview.
+
+If you want to run all of the R chunks in a Markdown file all at once, click the drop down menu next to the "Run" button at the top of the Script pane, and select "Run All" (this appears at the bottom of the drop down menu).  You can go ahead and do this now, and then click the preview button. The result will be that you'll see the HTML file of this complete lab in the Viewer pane to the right.
+
+The {r} after the backticks in the first line of the chunk is essential -- it specifies that this chunk of the R Markdown file should be interpreted as R code.  R Markdown documents can also contain chunks of code written in some other languages (like {python} and {sql}).  However, in this class, we will only use R code.  
+
+To insert a new code chunk, you can type the backticks and {r} manually, or you can click the Insert icon at the top of the Script pane and then select R from the drop-down menu.
+
+Contents of chunks without an {r} will not be evaulated as R code. For example:
+
+```
+# Here is some code that opens a new tab in RStudio,
+# which could disrupt the flow of the lab if it were executed by default.  
+# You can make the chunk executable by putting an {r} after the first ``` that delimits the chunk.
+
+View(mtcars)
+```
+
+Notice that without the {r} after the opening backticks, you don't even have the option of executing the code. Similarly, code written outside a code chunk will not be interpreted. For example, the following line is valid R code:
+
+y <- c(1,2)
+
+yet it will not be executed in this script, specifically because it is not enclosed in an R code chunk.
+
+### R Chunks and Global Propagation
+
+Note that while chunk output will (typically) appear inline in the script (i.e., in the R Markdown file), the actions taken within a chunk propagate globally -- once a chunk is executed, the variables assigned, functions defined, etc, are available in R's global environment for the current project, and are therefore accessible from the console window.  
+
+Here's an example.  Go ahead and execute the chunk and take a look at the inline output below it. 
+
+```{r}
+# Create a variable, y, that contains the numbers 1 and 2
+
+y <- c(1,2)
+y
+```
+
+The line of code at line 106 creates the object *y*, and the line of code at line 107 displays the content of the object *y*.
+
+Notice that if you click on the Environment tab in the Global Environment pane (typically top right pane, unless you've re-ordered them), the object *y* now shows up there. 
+
+### Creating a Word or PDF file
+
+To convert your Markdown file to MS Word file or directly to a PDF file, click on the drop down menu icon (triangle) directly to the right of the Preview button at the top of the Script pane. From there, you can select "Knit to PDF" or "Knit to Word." Go ahead and select "Knit to Word." This should create a Word file that looks like the HTML file in your viewer with all the formatting, but now you can edit it like any other Word file.
+
+Notice that after you perform this "Knit to Word" the preview button at the top of the script pane changes to a "Knit" button. You can still find Preview under the drop down menu next to the Knit button.
+
+If you look at the folder where Lab0.Rmd is saved, you will see a new file called Lab0.docx has been created.
+
+Note: If you choose "Knit to PDF", you will need to have a TeX distribution installed on your machine for this to work properly. TeX is a free typesetting language. You can download it here:
+
+- Mac: http://www.tug.org/mactex/
+- Windows: https://miktex.org/download
+
+My recommendation is that you work within RStudio to get you R Markdown document into good shape, previewing in HTML several times. When you feel that your document is ready, then Knit it into a Word document or PDF file for submission.
+
+### Why R Markdown?
+
+Imagine that I asked you to type a list of numbers into R, draw 10 different random samples from the list, find the mean of each sample, and make a histogram of each sample. You do this in the console, and then manually save each histogram. You open a new Word document, type in your 10 means by hand, and then load each of the 10 histograms into the document. Time-consuming, but you're done! 
+
+But now what if you realize you made a typo when entering the initial list of numbers, and a 100 turned into a 10 by accident. To fix your document, you'd need to re-do the whole manual process of drawing the samples, finding the means, saving the histogram files, typing the numbers into word, and loading the images. So much extra work due to the typo! 
+
+But if you had written your document in R Markdown, all you'd need to do is add an extra 0 to your mis-typed number and hit the 'Knit' button again, and everything would get automatically updated. Much less work!
+
+Using R Markdown can help streamline your code, text, and graphics workflow.
+
+### Creating a New R Markdown document
+
+If you want to create a new R Markdown document, click on the File drop down menu item at the very top left of the RStudio window, and select "New File" and then "R Notebook."
+
+I have created an R Markdown template for your first homework assignment. You're welcome to use that, or to create one of your own.
+
+
+### References
+
+There are lots of good references for R, RStudio, and R Markdown if you want to look something up quickly or are interested in learning more. Here are a few:
+
+- Base R cheat sheet: https://www.rstudio.com/wp-content/uploads/2016/05/base-r.pdf
+- R Markdown basics: https://rmarkdown.rstudio.com/authoring_basics.html
+- R Markdown cheat sheet: https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf
+- ggplot2 cheat sheet (for graphics): https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
