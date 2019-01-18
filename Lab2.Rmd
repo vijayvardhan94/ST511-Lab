@@ -1,0 +1,162 @@
+---
+title: 'ST 411/511 Lab 2: Working with the Normal Distribution in R'
+output:
+  html_notebook: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we will use in this lab
+library(ggplot2)
+```
+
+In Wednesday's lecture, you saw data on Rotten Tomatoes ratings for movies in 2015. Specifically, the list of movies is 146 films on Fandango.com that had tickets on sale in 2015, as of August 24, 2015, and had at least 30 reviews on Fandango.com.
+
+Data are available as a .csv file at: https://github.com/fivethirtyeight/data/tree/master/fandango
+
+Today we will see how to work with this data in R.
+
+**Population**: 146 films that meet the eligibility criteria
+
+**Variable of Interest**: There are different scores for each film (e.g. IMDB ratings, Fandango stars). In lecture, we looked at the Rotten Tomatoes Tomatometer score. In lab we'll look at the IMDB User Score instead. Possible values are between 0 and 10.
+
+First, we can read in the data directly from the web. The data are in a csv file. We load the data into R using the `read.csv()` command and save it as a data frame called **movies**.
+
+```{r}
+movies <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/fandango/fandango_score_comparison.csv")
+```
+
+We can see what the column names (variables) are in the data by using the `names` command:
+
+```{r}
+names(movies)
+```
+
+First let's make a histogram of the population. The variable we are interested in is called **IMDB**. We saw how to use `ggplot()` to make a histogram last week. In this case I have added a little bit of customization -- `binwidth=0.5` means that I want each bar on the histogram to be 0.5 units wide, `color="black"` means that I want the outline of the bars to be black, `fill="blue"` means that I want the inside of the bars to be blue, and `alpha=0.5` means that I want the opacity of the bars to be 50% (this produces a lighter blue color). 
+
+```{r}
+ggplot(movies, aes(x=IMDB)) + geom_histogram(binwidth=0.1, color="black", alpha=0.9, fill="yellow") + ggtitle("Population Histogram") + 
+  xlab("Tomatometer Score")
+```
+#alpha is about transparency
+Try some different values for these options, perhaps different colors, bin widths, or opacities. There are lots of ways to customize plots using ggplot.
+
+## Examining the population
+
+We can calculate the population variance $\sigma^2$, which we need to know to perform a $z$-test. Remember that we want to take the variance of the IMDB scores, so we need to specify the name of the data frame, followed by a dollar sign, followed by the name of the column within the data frame.
+
+```{r}
+var(movies$IMDB)
+```
+
+It may also be of interest to us to examine specific values of the data. Which movie had the highest IMDB rating? The `which.max()` function will return the row number of the movie with the highest IMDB score. We then display just that row using the `[,]` notation. The number(s) before the comma are the row numbers we want to display, and the number(s) after the comma are the column numbers we want to display. Film name is the first column and IMDB is the sixth, so putting `c(1,6)` after the comma will print the first and sixth columns.
+
+```{r}
+idmax <- which.max(movies$IMDB)
+movies[idmax, c(1,6)]
+```
+
+Which movie did you get? What is the IMDB score (recall these are values from 0 10 to)? Did you see this movie?
+
+What about the movie with the lowest IMDB user score? We can use the `which.min()` function to find this. It has the same syntax as `which.max()`.
+
+```{r}
+idmin <- which.min(movies$IMDB)
+movies[idmin, c(1,6)]
+```
+
+## Drawing a specific sample
+
+Thus far, we've looked at the *population*. Now let's consider taking a *sample* from that population.
+
+We know that when we draw a **random sample**, we get different samples each time. This is a property we want, but it makes it difficult to discuss the results of a particular random sample. 
+
+We can force R to draw the same random sample each time we run code by using the `set.seed()` function. The argument in `set.seed()` is any number you'd like -- you can pick 12345, 352789908, your favorite actor's birthday, the fist 10 digits of pi, etc. The same number will result in the sample sample being drawn.
+
+Let's give this a try and draw a sample of size $n=20$. The vector **samp** will consist of the row numbers of the 20 randomly selected movies. The last line of code will print out just the selected rows in the data frame, showing the title and IMDB score.
+
+(Note: because some of these titles are long, the columns may not all display together. After running this code chunk, you can use the white arrows at the top of the output to scroll between the columns. You can use the previous and next buttons at the bottom of the output to cycle between the first 10 movies and the second 10 movies.)
+
+```{r}
+set.seed(411511)
+samp <- sample(1:nrow(movies), size=20)
+
+movies[samp, c(1,6)]
+```
+
+You should get the same list of movies as I did, even though we are running the code on separate computers because we used the same seed. The first 3 movies in my sample are Welcome to Me, Unfriended, and Annie. Did you get the same ones?
+
+Try running this code chunk again by clicking the green arrow in the upper right corner of the chunk. You should get the same sample again.
+
+Try changing the number you gave in `set.seed()`. Now you should get a different list of movies.
+
+## $z$-test
+
+Let's work through the process of a $z$-test. Now we will assume that we don't know the population mean, but are interested in using the sample to make inference about the population mean. Here are the null and alternative hypotheses we are interested in testing:
+
+**Null hypothesis**: $H_0:\mu=6.5$. In words: the null hypothesis is that the population mean IMDB score is 6.5.
+
+**Alternative hypothesis**: $H_A:\mu>6.5$. In words: the alternative hypothesis is that the population mean IMDB score is greater than 6.5. This is a one-sided greater alternative hypothesis.
+
+**Test statistic**: this is our sample mean minus $\mu_0$ (the value of $\mu$ assuming the null hypothesis is true), divided by the standard deviation of the sampling distribution.
+
+```{r}
+# Make sure you are using the same seed as me if you want to check your answer.
+set.seed(411511)
+samp <- sample(1:nrow(movies), size=20)
+
+Xbar <- mean(movies$IMDB[samp])
+sigma2 <- var(movies$IMDB)
+  
+Z <- (Xbar - 6.5) / sqrt(sigma2/20)
+Z
+```
+
+I got $Z=0.443$.
+
+Aside: Note that the values for the sample mean (`Xbar`) and population variance (`sigma2`) are stored in the computer, but not printed out on the screen. If we want to print them to see what they are, we can either type the name of the variable, or put the entire line of code in parentheses when we define the variable. Give it a try:
+
+```{r}
+Xbar
+(Xbar <- mean(movies$IMDB[samp]))
+```
+
+
+**p-value**: The $p$-value is the probability under the null hypothesis that we would observe the test statistic we did ($Z=0.443$) or something more extreme just due to chance. Because we are using a one-sided greater alternative hypothesis, "something more extreme" means values of $Z$ that are larger than 0.443. This is the area under the standard normal curve that is above 0.443. `pnorm(Z)` will give the area under the curve BELOW the value of $Z$, so if we want the area above we can just use `1-pnorm(Z)`.
+
+```{r}
+1-pnorm(Z)
+```
+I got a $p$-value of 0.329.
+
+**Conclusion**: We fail to reject the null hypothesis $H_0:\mu=6.5$ at significance level $\alpha=0.05$, since our $p$-value is greater than 0.05. We do not have strong evidence that the population mean IMDB score is greater than 6.5, so we can not rule out the null hypothesis.
+
+## Now you try:
+
+Repeat this procedure for the same null hypothesis, but one-sided lesser and two-sided alternative hypotheses. State what the alternative hypothesis is in each case, calculate the test statistic, find the $p$-value, and state the conclusion of the test in words.
+
+```{r}
+#H_0:\mu<6.5$
+pnorm(Z)
+
+#H_0:\mu=/=6.5$
+2*(1 -pnorm(Z))
+```
+
+
+HINT: think about whether or not the value of $Z$ will be different than above.
+
+Check your work: the correct p-values are 0.671 for the one-sided lesser alternative hypothesis and 0.658 for the two-sided alternative hypothesis. Note that you needed to use the same `set.seed()` value as me to get the same random sample in order to get the same $p$-values.
+
+## Want more practice?
+
+You can try:
+
+- Use your random sample to test a different set of hypotheses (e.g., your null could be $H_0:\mu=4.5$).
+- Draw a different random sample and test the same hypotheses.
+- Draw a different random sample and test different hypotheses.
