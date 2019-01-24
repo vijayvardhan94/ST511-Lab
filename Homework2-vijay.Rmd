@@ -88,9 +88,7 @@ max(rivers)
 
 ```{r}
 riversdf <- data.frame(rivers)
-
-ggplot(riversdf, aes(x=rivers)) + geom_histogram(binwidth=100, color="black", alpha=0.5, fill="blue")
-+ ggtitle("Population Histogram") + xlab("River Length")
+ggplot(riversdf, aes(x=rivers)) + geom_histogram(binwidth=100, color="black", alpha=0.5, fill="blue") + ggtitle("Population Histogram") + xlab("Length of river")
 
 ```
 In the histogram we notice that there are some outliers present. It also looks skewed to the right. The outliers are also bigger/larger than some rivers. 
@@ -110,7 +108,8 @@ Xbar
 
 ```{r}
 #this is our sample mean minus $\mu_0$ (the value of $\mu$ assuming the null hypothesis is true), divided by the standard deviation of the sampling distribution.
-variance <-var(riversdf$rivers[samp])
+variance <-var(rivers)
+variance
 Z <- (Xbar - 600)/sqrt(variance/30)
 Z
 ```
@@ -118,14 +117,15 @@ Z
 
 ### (e) (2 points) Find the $p$-value corresponding to your test statistic from part (d). Recall that you are using a two-sided alternative hypothesis.
 ```{r}
-pnorm(Z)
+
 2*(1 -pnorm(abs(Z)))
 ```
 
 
 ### (f) (2 points) What do you conclude from this hypothesis test? State your conclusion in words.
 
-We fail to reject the null hypothesis, as the possibility that the population average mean for lengths of
+We assume $\alpha=0.05$
+We fail to reject the null hypothesis,$H_0: \mu=600$, as the possibility that the population average mean for lengths of
 river is 600 since p value is greater than alpha, cannot be ruled out.
 
 ## Question 3
