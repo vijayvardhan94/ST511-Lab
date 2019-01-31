@@ -1,0 +1,188 @@
+---
+title: "ST 411/511 Homework 3"
+subtitle: "Due on January 30"
+author: "Vijay Vardhan Tadimeti"
+date: "Winter 2019"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+# Instructions
+
+**You should submit your assignment as either a PDF or Word document, which you can compile (should you choose -- recommended) from the provided .Rmd (R Markdown) template.** Please include your code.
+
+Note: you may use the `t.test()` function for Question 4, but please do not use it for Questions 1-3.
+
+# Problems (25 points total)
+
+```{r, include=FALSE}
+# Load libraries we need for the assignment
+library(ggplot2)
+library(Sleuth3)
+```
+
+
+## Question 1: True or False, and explain your reasoning.
+
+### (a) (2 points) A $p$-value tells you the probability that the null hypothesis is true.
+False. P values that are small usually indicate that there is an evidence of it being against the null hypothesis. Typically for a smaller p value we would reject the null hypothesis in favour of the alternate hypothesis.Usually a P value represents a for or against the hypothesis.
+
+
+### (b) (2 points) It is possible for a hypothesis test procedure to reject the null hypothesis even when the null hypothesis is true.
+True. When we reject a null hypothesis when its true as well as possible leads to a type 1 error.
+
+
+
+### (c) (2 points) Consider the null hypothesis $H_0:\mu=\mu_0$ versus a one-sided greater alternative $H_A:\mu>\mu_0$. For a fixed significance level $\alpha$ the critical value $z_{1-\alpha}$ will be greater than the critical value $t_{(4)1-\alpha}$ (i.e., the critical value for a $t$-distribution with 4 degrees of freedom).
+
+It is false. Even if we assume alpha's value as 0.05, the critical value of its t distribution is more than the critical value of the normal distribution. The area of the tail under the t distribution is more when we compare it with the z of the normal distribution. It can be shown below.
+
+```{r}
+qnorm(0.95)
+qt(0.95, df = 4)
+
+```
+
+
+
+
+## Question 2
+
+A random sample of $n=10$ OSU students is obtained, and the college GPA of each is recorded. The GPAs of the 10 students in the sample are provided in the vector `gpa`.
+
+```{r}
+gpa <- c(3.1, 3.7, 4.0, 2.7, 2.5, 3.4, 3.5, 3.0, 1.9, 3.4)
+```
+
+### (4 points) Test the null hypothesis $H_0: \mu=3.0$ versus the one-sided greater alternative $H_A: \mu>3.0$ at significance level $\alpha=0.05$. What do you conclude?
+
+We notice that the P value is lesser than alpha, we hence reject the null hypothesis.
+```{r}
+var <- var(gpa)
+sd <- sd(gpa)
+x  <- mean(gpa)
+t  <- (x-3)/(sqrt(var/10))
+p <- 1-pt(t,9)
+sd
+x
+t
+p
+t.test(gpa,mu=3.0,alternative="greater")
+
+```
+
+
+
+
+
+## Question 3
+
+122 guinea pigs were randomly assigned to either a control group $(X_1, X_2, \ldots, X_m; m=64)$ or to a treatment group that received a dose of *tubercle bacilli* $(Y_1, Y_2, \ldots, Y_n; n=58)$. The lifetime, in days, for each guinea pig was recorded. The data are available as `ex0211` in the `Sleuth3` library.
+
+```{r}
+data(ex0211)
+```
+
+### (a) (2 points) Compute the sample mean and sample variance for each group.
+```{r}
+meancontrol <- mean(ex0211$Lifetime[ex0211$Group=="Control"])
+meanbasilli <- mean(ex0211$Lifetime[ex0211$Group=="Bacilli"])
+varcontrol <- var(ex0211$Lifetime[ex0211$Group=="Control"])
+varbasilli <- var(ex0211$Lifetime[ex0211$Group=="Bacilli"])
+ncontrol <- length(which(ex0211$Group=="Control"))
+nbasilli <- length(which(ex0211$Group=="Bacilli"))
+
+meancontrol 
+meanbasilli 
+varcontrol 
+varbasilli 
+ncontrol 
+nbasilli
+```
+
+
+
+
+### (b) (2 points) Compute the pooled variance estimate $s_P^2$.
+```{r}
+
+sp2 <- ((ncontrol-1)*varcontrol + (nbasilli-1)*varbasilli)/(ncontrol+nbasilli-2)
+sp2
+
+```
+
+
+
+
+### (c) (2 points) Find the $t$-statistic for testing the null hypothesis that the difference in population mean survival time between these two treatments is zero ($H_0:\mu_X-\mu_Y=0$).
+```{r}
+
+
+tstat <- (meancontrol-meanbasilli)/sqrt(sp2*(1/ncontrol + 1/nbasilli))
+tstat
+```
+
+
+
+
+### (d) (2 points) Find the critical value for a level $\alpha=0.01$ one-sided test of the null hypothesis vs. the alternative that the difference in population mean survival time is greater than zero ($H_A:\mu_X-\mu_Y> 0$).
+```{r}
+qt(1-0.01, df=ncontrol+nbasilli-2)
+
+```
+
+
+
+
+### (e) (1 point) Find the one-sided greater $p$-value for the test in part (d).
+```{r}
+p <- 1-pt(abs(tstat), df=ncontrol+nbasilli-2)
+p
+
+```
+
+
+
+
+### (f) (2 points) Based on your answers to parts (d) and (e), would you reject the null hypothesis $H_0:\mu_X-\mu_Y=0$ vs. the alternative ($H_A:\mu_X-\mu_Y>0$) at level $\alpha=0.01$? State your conclusion in the original wording of the question.
+
+Here the P value is less than alpha, we hence reject the null hypothesis.
+
+```{r}
+control <- ex0211$Lifetime[ex0211$Group=="Control"]
+basilli <- ex0211$Lifetime[ex0211$Group=="Bacilli"]
+t.test(control, basilli, alternative="greater", var.equal=TRUE)
+
+```
+
+
+
+
+## Question 4
+
+Researchers studied 15 pairs of identical twins where only one twin was schizophrenic ('Affected'). They measured the volume of the left hippocampus region of each twin's brain. This data is available as `case0202` in the `Sleuth3` library.
+  
+```{r}
+data(case0202)
+View(case0202)
+```
+
+
+### (a) (1 point) Is this paired data or two independent samples? Explain.
+
+It is a paired test. Here we have 2 samples out of the total number of individuals, which are related to each other, but are also not independent. We must note that the both our mesurements are being performed on the same set of individuals.
+
+
+
+### (b) (3 points) Consider a hypothesis test to examine whether the difference in mean left hippocampus volume (Unaffected - Affected) is equal to zero, versus the two-sided alternative. Use the `t.test()` function in R to perform the appropriate $t$-test at significance level $\alpha=0.01$. Report the $p$-value and what you conclude from the test
+
+Here we have the P value as 0.006062 and our alpha value is 0.01. It is clear that the p value is lesser than the alpha. We hence reject the null hypothesis.
+
+```{r}
+unaffected <- case0202$Unaffected
+affected <-case0202$Affected
+t.test(case0202$Unaffected,case0202$Affected, data=case0202, alternative="two.sided", paired=TRUE)
+```
+
+
