@@ -1,0 +1,195 @@
+---
+title: 'ST 411/511 Lab 6: More Alternatives to the t-test'
+date: February 16, 2019
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we will use in this lab
+library(ggplot2)
+library(Sleuth3)
+```
+
+## Outline
+
+In today's lab, we will look at
+
+- Sign Test
+- Wilcoxon Signed-Rank Test
+- Levene's Test
+
+## Sign Test
+
+We will compute both the exact $p$-value and the normal approximation $p$-value for the sign test using data from an experiment by Charles Darwin comparing plant heights for self-fertilized vs. cross-fertilized seeds. The data are paired because the two plants from each pair were grown in the same pot. The data are available in `ex0428` from the `Sleuth3` package. We can read the description of these data.
+
+```{r}
+data(ex0428)
+?ex0428
+```
+
+Compute the differences (Cross-fertilized - Self-fertilized) and find the sample size $n$:
+
+```{r}
+heightDiffs <- ex0428$Cross - ex0428$Self
+nDiffs <- length(heightDiffs)
+```
+
+Let's look at the distribution of the sample differences. Most of differences are larger than 0.
+
+```{r}
+ggplot(data.frame(heightDiffs), aes(x=heightDiffs)) + 
+  geom_histogram()
+```
+
+
+To test that the *median of the population of differences* is 0, first count how many of the pairs produce a difference greater than 0. There are 13 values (out of 15) that are larger than 0. The `heightDiffs > 0` bit of code will produce a vector of True/False values for whether or not each element of *heightDiffs* is larger than 0. We take the the sum of this to count up how many True values there are.
+
+```{r}
+Kstat <- sum(heightDiffs > 0)
+Kstat
+```
+
+Use the `binom.test()` function to get exact $p$-values. The first two arguments specify the value of the test statistic and the number of observations. We could find one-sided lesser, one-sided greater, and two-sided $p$-values.
+
+```{r}
+binom.test(Kstat, n=nDiffs, p=0.5, alt="two.sided") #two-sided
+binom.test(Kstat, n=nDiffs, p=0.5, alt="greater") #one-sided greater
+binom.test(Kstat, n=nDiffs, p=0.5, alt="less") #one-sided lesser
+```
+
+What do you conclude in the two-sided alternative case? What does this mean in relation to the hypothesis that was being tested?
+
+Use the normal approximation to get an approximate $p$-value. We could find one-sided lesser, one-sided greater, and two-sided $p$-values.
+
+```{r}
+Zstat <- (Kstat - nDiffs/2)/sqrt(nDiffs/4)
+2*(1-pnorm(abs(Zstat))) # two-sided
+(1 - pnorm(Zstat)) # one-sided upper
+pnorm(Zstat) # one-sided lower
+
+```
+
+How good is the approximation? Do you think the approximation would get better if we had a bigger sample size?
+
+## Wilcoxon Signed-Rank Test
+
+The Wilcoxon signed-rank test is another method that is used on a sample of data from one population, or on paired samples from two populations. We will use the same paired data comparing plant heights for self-fertilized vs. cross-fertilized seeds of plants in the same pot.
+
+We can use the same `wilcox.test()` function that we used to perform the Wilcoxon rank-sum test to perform the signed-rank test.  The difference is that in order to use the signed-rank test you must either give the function only one sample, or tell it that it should perform a paired analysis.  We'll try both options here to demonstrate the fact that they do the same thing, as well as performing the test by hand.
+
+First let's compute the Signed-Rank test statistic by hand. We subtract the hypothesized center *mu0* from each value of heightDiffs, take the absolute value of these differences using the `abs()` function, and then rank those absolute differences using the `rank()` function. I have had the ranks print out so you can see them.
+
+For the test statistic, we take only the subset of *distRanks* such that the corresponding value of *heightDiffs* is greater than *mu0* using `distRanks[heightDiffs > mu0]`. We then sum up the ranks in this subset.
+
+```{r}
+mu0 <- 0
+distRanks <- rank(abs(heightDiffs - mu0))
+distRanks
+
+Sstat <- sum(distRanks[heightDiffs > mu0])
+Sstat
+```
+
+Compare to the test statistic given by the R function: use the difference computed as part of the sign test as the single sample for the function `wilcox.test()`, to test that the 'center' of the population of differences is 0:
+
+```{r}
+wilcox.test(heightDiffs, mu=0)
+```
+
+Notice that the value of V in the output is the same as our S we computed by hand.
+
+We can also give both samples and tell the function that the observations are paired, using the `paired=TRUE` argument:
+
+```{r}
+wilcox.test(ex0428$Cross, ex0428$Self, paired=TRUE, mu=0)
+```
+
+Again, we get the same value for the test statistic (96) and the same $p$-value as before.
+
+## Levene's Test
+
+The function `leveneTest()` is included in the library `car`, which you will first need to install using `install.packages("car")` if you have not done so before. Remember, you only need to install packages once so make sure to comment out the install.packages line of code again using the `#` if you do run it.
+
+```{r}
+#install.pacakges("car")
+library(car)
+```
+
+For Levene's test, we need two independent samples, so we will turn to new data.
+
+Set sample sizes $n_1 = 20$ and $n_2 = 30$. Generate two samples: the first sample is drawn from a Normal population distribution with mean 0 and variance 4, and the second sample is drawn from a Chi-squared population distribution with 2 degrees of freedom (and therefore also has population variance 4).
+
+```{r}
+n1 <- 20
+n2 <- 30
+samp1 <- rnorm(n1, mean=0, sd=2)
+samp1
+samp2 <- rchisq(n2, df=2)
+samp2
+```
+
+Let's examine the two samples. We'll combine them together into a data frame and add another column indicating which sample the observation came from. Note that your plot will look different from your neighbor's based on the random samples you drew. You can add a line of code to print out the data frame if you'd like to look at the format and observations.
+
+```{r}
+sampComb <- c(samp1, samp2)
+sampGrp <- as.factor(rep(c(1,2), c(n1,n2)))
+df <- data.frame(sampComb, sampGrp)
+
+ggplot(df, aes(x=sampGrp, y=sampComb)) +
+  geom_boxplot()
+```
+
+Perform Levene's test (Option A) by hand, by first computing the absolute distance of each observation from its sample median, and then performing a two-sample $t$-test on these distances:
+
+```{r}
+dists1 <- abs(samp1 - median(samp1))
+dists2 <- abs(samp2 - median(samp2))
+t.test(dists1, dists2, var.equal=TRUE)
+```
+
+Now let's compare with the built-in function. Use the `leveneTest()` function to test that the 'spreads' are the same for these two populations. To use the function, we need to create a combined data vector, and another vector that indicates which group each observation came from. Again, you can add a line of code to print out the data if you'd like to look at the format and observations.
+
+```{r}
+sampComb <- c(samp1, samp2)
+sampGrp <- as.factor(rep(c(1,2), c(n1,n2)))
+leveneTest(sampComb, group=sampGrp)
+```
+
+Is your $p$-value the same as when you performed the test by hand? (It should be).
+
+Now let's try both the manual calculation of differences and then $t$-test method and the `leveneTest()` method with the option `center= 'mean'` instead of 'median' to take the absolute differences from each sample mean (this is Option B we talked about).
+
+```{r}
+dists1 <- abs(samp1 - mean(samp1))
+dists2 <- abs(samp2 - mean(samp2))
+t.test(dists1, dists2, var.equal=TRUE)
+```
+	
+Compare to the `leveneTest()` results to see that they are again equivalent:
+
+```{r}
+leveneTest(sampComb, group=sampGrp, center='mean')
+```
+
+Finally, let's consider the squared differences from the sample mean (Option D).
+
+We'll just do this one by hand, since the `leveneTest()` function doesn't have an easy way for us to implement it.
+
+```{r}
+dists1 <- (samp1 - mean(samp1))^2
+dists2 <- (samp2 - mean(samp2))^2
+t.test(dists1, dists2, var.equal=TRUE)
+```
+
+In each case, how would you interpret your $p$-values? Interpretations will vary based on your randomly generated data. But since we generated the data from two populations that had the same variance, you'll likely find that we fail to reject the null hypothesis that the spreads are the same.
+
+Note that the last version, with the squared differences from the sample mean in each group, is the only test that explicitly compares the variances of the populations. The others test other concepts of `spread` which yield similar results.
+
+
