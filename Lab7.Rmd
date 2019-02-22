@@ -1,0 +1,247 @@
+---
+title: 'ST 411/511 Lab 7: Analysis of Variance'
+date: February 22, 2019
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we will use in this lab
+library(ggplot2)
+library(Sleuth3)
+```
+
+## Outline
+
+In today's lab, we will look at ANOVA and the Kruskal-Wallis Test for Case Study 1 from Chapter 5 of *The Statistical Sleuth*. We will then return to the Spock Conspiracy Trial data discussed during lecture. Note that it may be helpful to knit the file and look at the output in the RStudio Viewer pane to see the math typeset and the formatting in the lab.
+
+## Overview of One-way Analysis of Variance (ANOVA)
+
+Analysis of variance (ANOVA) is a method for evaluating relationships between means for *several* populations (i.e., more than 2). While it's called analysis of *variance*, it's very much a procedure used to test the equality of several population *means*. In fact, if we've obtained samples from $I>2$ populations, the primary null hypothesis that we can investigate with one-way ANOVA is given by:
+
+> $H_0: \mu_1=\mu_2=\cdots =\mu_I$
+
+In this regard, one-way ANOVA is a generalization of the two-sample problems we've been looking at so far in class.
+
+### Exploratory Plots: Longevity Case Study
+
+The dataset in `case0501` in the `Sleuth3` library contains lifespan measurements (in months) for 6 groups of female mice. Each group was fed a different diet--each diet was comprised of various levels of caloric intake and/or protein content both before and after weaning. Let's take a look at the help file and the data:
+
+```{r}
+names(case0501)
+?case0501
+ggplot(data = case0501, aes(Diet, Lifetime)) + 
+  geom_boxplot(fill = "yellow") + 
+  ylab("Lifetime (months)")
+```
+
+By default in R, the levels of a factor variable, in this case the *Diet* variable are sorted alpha-numerically, with capital letters going before lower case letters. You can see the default ordering by using the `levels()` function, shown below, and verify that this is the order in which the side-by-side boxplots appear above.
+
+```{r}
+levels(case0501$Diet)
+```
+
+It's possible to change this default ordering.
+
+### Questions of Interest
+
+In the diet and longevity case study, the researchers wanted to know which, if any, of the diets resulted in longer life spans. In Statistics we break this problem into two parts:
+
+1. Are the population means the same or different?
+
+2. If there is evidence that the population means are different, then we look at specific *pairwise* comparisons (i.e., comparisons between two groups at a time) to try to determine *which* population means are different and *how* they are different.
+
+In this lab, we'll focus on the first question. We'll leave the second question for next week. What does it looks like from the side-by-side boxplots? It's pretty clear that there's a shift in the centers of some of the *samples*, but what about the centers of the *populations*?
+
+To address this question, we use one-way analysis of variance (one-way ANOVA), which involves a quantitative comparison of variation *between the groups* and variation *within the groups*.
+
+We will see how to perform the analysis in several different ways.
+
+### By Hand
+
+#### Sum of Squares Within
+
+The sum of squares within is found by summing up the squares of the observations minus their group means, $\sum_{i,j}(X_{i,j}-\bar{X}_i)^2$. As mentioned in lecture, there are faster/tidier ways of doing these calculations. I have used this version to cut down on specialized functions so it is more apparent exactly what calculations we are doing.
+
+```{r}
+# Create a vector of ids which list which rows correspond to each diet.
+ID85 <- which(case0501$Diet == "N/N85")
+ID40 <- which(case0501$Diet == "N/R40")
+ID50 <- which(case0501$Diet == "N/R50")
+IDNP <- which(case0501$Diet == "NP")
+IDR <- which(case0501$Diet == "R/R50")
+IDlo <- which(case0501$Diet == "lopro")
+
+# Create a vector of lifetime means by group
+groupmeans <- c(mean(case0501$Lifetime[ID85]), mean(case0501$Lifetime[ID40]), mean(case0501$Lifetime[ID50]), mean(case0501$Lifetime[IDNP]), mean(case0501$Lifetime[IDR]), mean(case0501$Lifetime[IDlo]))
+
+# Calculate the SSW: the sum of squared differences between observations and their group mean
+SSW <- sum((case0501$Lifetime[ID85]-groupmeans[1])^2) +
+  sum((case0501$Lifetime[ID40]-groupmeans[2])^2) +
+  sum((case0501$Lifetime[ID50]-groupmeans[3])^2) +
+  sum((case0501$Lifetime[IDNP]-groupmeans[4])^2) +
+  sum((case0501$Lifetime[IDR]-groupmeans[5])^2) +
+  sum((case0501$Lifetime[IDlo]-groupmeans[6])^2)
+SSW
+```
+
+This is also the sum of squared residuals under the *full/separate means* model. Recall that the *full* model is the one where we allow each group to have it's own mean, rather than restricting the group means to all be the same. The residual $e_{i,j}$ under this model is the difference between an observation and the sample mean of its group, i.e. $e_{i,j}=X_{i,j}-\bar{X}_i$. So the calculation above is equivalent to the sum of squared residuals under the *full/separate means* model.
+
+#### Sum of squares total
+
+The sum of squares total is found by summing up the squares of the observations minus the grand mean, $\sum_{i,j}(X_{i,j}-\bar{X})^2$.
+
+```{r}
+grandmean <- mean(case0501$Lifetime)
+SST <- sum((case0501$Lifetime - grandmean)^2)
+SST
+```
+
+This is also the sum of squared residuals under the *reduced/equal means* model. In this model, the residual $e_{i,j}$ is the difference between an observation and the grand mean, i.e. $e_{i,j}=X_{i,j}-\bar{X}$. So the calculation above is equivalent to the sum of squared residuals under the *reduced/equal means* model.
+
+#### Sum of squares between
+
+We can find the sum of squares between by taking the sum of squares total minus the sum of squares within, SSB=SST-SSW.
+
+```{r}
+SSB <- SST - SSW
+SSB
+```
+
+Note that this is also the *Extra sum of squares*.
+
+#### Degrees of freedom
+
+We know how many total observations there are and how many groups there are, so we can find the degrees of freedom.
+
+```{r}
+n <- nrow(case0501)
+I <- 6
+dfW <- n - I
+dfT <- n - 1
+dfB <- I - 1
+```
+
+Note that the degrees of freedom between is also the *Extra degrees of freedom*.
+
+#### Mean squares
+
+The mean square is the sum of squares divided by the corresponding degrees of freedom.
+
+```{r}
+MSW <- SSW / dfW
+MSB <- SSB / dfB
+```
+
+#### $F$-statistic
+
+The $F$-statistic is the mean square between divided by the mean square within:
+
+```{r}
+F <- MSB / MSW
+F
+```
+
+We also saw that we could think of it as the (extra sum of squares/extra degrees of freedom), divided by the pooled variance, where we know the pooled variance is equal to the mean square within. You can calculate this to show it's the same.
+
+That $F$-statistic looks really big. This should likely correspond to a very small $p$-value.
+
+#### $p$-value
+
+We want to look up the area in the F distribution with dfW and dfB degrees of freedom that is above our observed $F$-statistic.
+
+```{r}
+1-pf(F, df1=dfB, df2=dfW)
+```
+
+This $p$-value is very, very small -- so close to zero that 0 gets printed out due to rounding. We would reject the null hypothesis that the population mean lifetimes are all the same. It appears that at least one of the population mean lifetimes is different from the others.
+
+### Using the `anova` function wrapped around the `lm` function:
+
+We use the same *formula* syntax we have looked at for other functions, where we specify the names of the columns in our data that correspond to the response variable ~ the grouping variable.
+
+```{r}
+anova(lm(Lifetime ~ Diet, data=case0501))
+```
+
+Do these values agree with what you calculated by hand? Look back at the sums of squares and mean squares and check a few values. Note that *Diet* is our between group, and *Residuals* is our within group.
+
+The ANOVA table that R prints out provides the $p$-value in the `Pr(>F)` column. The $p$-value here is `< 2.2e-16`, i.e. less than 0.0000000000000002. So basically 0 and strong evidence that we reject the null hypothesis.
+
+### Using the `aov` function and then calling `summary` to print out the ANOVA table:
+
+Another way to perform ANOVA in R is to use the `aov` function and then calling `summary`.
+
+```{r}
+summary(aov(Lifetime ~ Diet, data=case0501))
+```
+
+Are these values the same? What about if you just use `aov` without using `summary`?
+
+Either method is fine, but using the `lm()` function will lead more naturally into future topics in this course.
+
+## Kruskal-Wallis Test
+
+The *Kruskal-Wallis Test* is a multiple group analog of Wilcoxon Rank-Sum Test. It is also a way for us to test whether the centers of all the groups are the same or not, and we use ranks of observations instead of the values themselves. We can perform it in R using the `kruskal.test` function. The syntax is again the same formula syntax we are used to.
+
+```{r}
+kruskal.test(Lifetime ~ Diet, data=case0501)
+```
+
+Note that this $p$-value is also very small!
+
+## More on the Spock Conspiracy Trial
+
+We will look at this data in lecture today, but we can look at a few other comparisons here. 
+
+Let's quickly look at the data and perform the analysis of variance again:
+
+```{r}
+ggplot(case0502, aes(x=Judge, y=Percent)) + geom_boxplot()
+
+anova(lm(Percent ~ Judge, data=case0502))
+```
+
+We remember that our ANOVA provided strong evidence that not all of the judges had the same percent women on their venires, with $p$-value = 0.00006. We only have tested whether or not all of the population means are the same -- we haven't tested which one(s) are different. From examining the boxplot, it seems that the Spock's judge was different, but we have not stated that statistically.
+
+There are several approaches we could try based on what we've learned so far. Here are two questions we could look at:
+
+1. Does Spock’s judge mean percentage differ from all the others?
+2. Are the other judges’ mean percentages the same?
+
+#### Does Spock’s judge mean percentage differ from all the others?
+
+To address this question, let's fit a one-way ANOVA model to see what evidence there is that the Spock trial judges venires are different from all of the other judges' venires combined (this is equivalent to a two-sample t-test).
+
+Note that `(Judge == "Spock's")` creates a TRUE/FALSE outcome for whether or not the judge is Spock's, so now we are modeling Percent based on just two groups, not seven.
+
+```{r}
+anova(lm(Percent ~ (Judge == "Spock's"), data = case0502))
+```
+
+This gives convincing evidence that the mean percent of women on the Spock judge's venires is different from the means of all the other judges' venires combined.  To see the equivalence with the two-sample $t$-test consider the following:
+
+```{r}
+t.test(Percent ~ (Judge == "Spock's"), data = case0502, var.equal = TRUE)
+```
+
+Notice that the $p$-value we get from the two-sample $t$-test with equal variance is exactly the same as what we get from the one-way ANOVA comparing the two groups. Also, notice that the square of the $t$-statistic is equal to the F-statistic.
+
+#### Are the other judges’ mean percentages the same?
+
+Let's fit a one-way ANOVA model *to Judges A, B, ..., F venires only* to see what evidence there is for all six of those underlying means being the same. We will look at whether there's evidence that the six judges other than the Spock trial judge differ in terms of the mean percent of women on the venires. We can use the `subset` function to look at only observations of the data where the judge is not Spock's.
+
+```{r}
+anova(lm(Percent ~ Judge, data = subset(case0502, Judge != "Spock's")))
+```
+
+Here, there's no evidence of a difference in the mean percent of women on the venires of these six judges ($p = 0.32$). 
+
+Putting this altogether, it's not just that the Spock trial judge had the lowest mean percentage of women, it's also that none of the other judges had substantially different mean percentages of women. Combined, this seems like compelling evidence of a bias against women on the part of the Spock trial judge.
+
