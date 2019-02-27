@@ -1,0 +1,233 @@
+---
+title: "ST 411/511 Homework 6"
+author: ""
+date: "Winter 2019"
+output:
+  pdf_document: default
+  word_document: default
+  html_notebook: default
+subtitle: Due on February 27
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.path = "images6/"
+)
+```
+
+# Instructions
+
+This assignment is due by 11:59 PM, February 27, 2019 on Canvas.
+
+**You should submit your assignment as either a PDF or Word document, which you can compile (should you choose -- recommended) from the provided .Rmd (R Markdown) template.** Please include your code.
+
+# Problems (25 points total)
+
+```{r include=FALSE}
+# Load libraries we need for the assignment
+library(ggplot2)
+library(Sleuth3)
+```
+
+
+## Question 1
+
+The table below shows a partially completed ANOVA table. (Note: if you are looking at this in RStudio it may be helpful to knit the file to properly view the table.)
+
+| Source of Variation | Sum of Squares | Degrees of Freedom | Mean Square | F-statistic | p-value |
+|:--------------------|:---------------|:-------------------|:------------|:------------|:--------|
+| Between Groups | . | . | . | . | . |
+| Within Groups | 35088 | 24 | . | | |
+|Total | 70907 | 31 | | | |
+
+### (a) (1 point) How many groups were there? 
+
+```{r}
+I <- (31-24) + 1
+I
+
+
+```
+
+  
+### (b) (4 points) Fill in the rest of the table. Values to be calculated are indicated by a "."
+
+```{r}
+SSW = 35088
+SST = 70907
+SSB=SST-SSW
+SSB
+
+Degrees_of_freedom_within_groups = 24 
+total = 31
+Degrees_of_freedom_between_groups = total - Degrees_of_freedom_within_groups
+Degrees_of_freedom_between_groups
+
+#n - I = 24
+#n - 1 = 31
+n <- 32
+
+#n - I  = 24
+#32 - I = 24
+I <- 8
+
+
+MSW = SSW/(n - I)
+MSW
+
+
+MSB = SSB/(I - 1)
+MSB
+
+F = MSB/MSW
+F
+
+1-pf(3.5,df1 = 8,df2 = 24)
+```
+
+
+### (c) (2 points) What is your conclusion from the one-way ANOVA analysis? State the hypothesis you are testing and what your decision/strength of evidence are.
+Ho : $\mu1=$$\mu1=$$\mu1=$$\mu1=$$\mu1=$$\mu1=$$\mu1=$$\mu1=$
+HA : Atleast one of the population mean $\mu$j is not equal to the others
+
+
+## Question 2 (Modified from *Sleuth* 5.25)
+
+The data file `ex0525` contains annual incomes in 2005 of a random sample of 2584 Americans who were selected for the National Longitudinal Survey of Youth in 1979 and who had paying jobs in 2005. The data set also includes a code for the number of years of education that each individual had completed by 2006: <12, 12, 13-15, 16, and >16. Perform an analysis of variance *by hand* (i.e. not using the built-in anova functions like `lm()` and `anova()`) to assess whether or not the population mean 2005 incomes were the same in all five education groups. Work through the following steps:
+
+```{r}
+
+View(ex0525)
+
+```
+
+
+### (a) (1 point) Create a side-by-side boxplot of 2005 income grouped by education category.
+```{r}
+
+ggplot(ex0525,aes(x=Educ,y=Income2005)) + geom_boxplot()
+
+```
+
+
+### (b) (2 points) Find the grand mean and the mean of each of the five education groups.
+
+```{r}
+GM <- mean(ex0525$Income2005)
+GM
+
+ID_11 <- which(ex0525$Educ=="<12")
+ID_12 <- which(ex0525$Educ=="12")
+ID_13 <- which(ex0525$Educ=="13-15")
+ID_14 <- which(ex0525$Educ=="16")
+ID_15 <- which(ex0525$Educ==">16")
+Mean_1 <- mean(ex0525$Income2005[ID_11])
+Mean_2 <- mean(ex0525$Income2005[ID_12])
+Mean_3 <- mean(ex0525$Income2005[ID_13])
+Mean_4 <- mean(ex0525$Income2005[ID_14])
+Mean_5 <- mean(ex0525$Income2005[ID_15])
+Mean_1
+Mean_2
+Mean_3
+Mean_4
+Mean_5
+
+```
+
+
+### (c) (2 points) Find the sums of squares between and within groups.
+
+```{r}
+
+SSW <- 
+  sum((ex0525$Income2005[ID_11]-Mean_1)^2) +
+  sum((ex0525$Income2005[ID_12]-Mean_2)^2) +
+  sum((ex0525$Income2005[ID_13]-Mean_3)^2) +
+  sum((ex0525$Income2005[ID_14]-Mean_4)^2) +
+  sum((ex0525$Income2005[ID_15]-Mean_5)^2) 
+SSW
+
+SST <- sum((ex0525$Income2005 - GM)^2)
+SST
+
+SSB <- SST-SSW
+SSB
+
+```
+
+
+### (d) (1 point) Find the mean squares between and within groups.
+
+```{r}
+n<- nrow(ex0525)
+I <- 5
+dfW <- n - I
+dfT <- n - 1
+dfB <- I - 1
+
+MSW <- SSW/dfW
+MSB <- SSB/dfB
+
+MSW
+MSB
+```
+
+
+### (e) (1 point) Find the $F$-statistic and $p$-value.
+```{r}
+F<- MSB/MSW
+F
+P<- 1-pf(F, df1=dfB, df2=dfW)
+P
+
+```
+
+
+### (f) (1 point) State the conclusion of your test.
+
+Here we reject the null hypothesis that the mean of all the five education group is zero,  infavour of the (two sided )alternate hypothesis that atleast one mean is not equal to the rest of the group since p < alpha = 0.1.
+
+### (g) (1 point) We can also state things we have calculated in the model testing framework. You should not need to calculate anything new for this part. What is the extra sum of squares? What is the pooled variance?
+```{r}
+ESS <- SST-SSW
+ESS
+sp<- MSW
+sp
+
+```
+
+
+
+
+## Question 3 (Modified from *Sleuth* 5.23)
+
+**Was Tyrannosaurus Rex warm-blooded?** Several measurements of the oxygen isotopic composition of bone phosphate in each of 12 bone specimens from a single *Tyrannosaurus rex* skeleton were taken. It is known that the oxygen isotopic composition of vertebrate bone phosphate is related to the body temperature at which the bone forms. Differences in means at different bone sites would indicate nonconstant temperatures throughout the body. Minor temperature differences would be expected in warm-blooded animals. Is there evidence that the means are different for the different bones? The data are in `ex0523` in the `Sleuth3` library.
+
+
+### (a) (2 points) Plot the oxygen isotopic composition for each of the bones using a side-by-side boxplot. Comment on whether or not you think the population means are the same for all 12 bones based on your plot.
+
+```{r}
+
+View(ex0523)
+ggplot(ex0523,aes(x=Bone,y=Oxygen)) + geom_boxplot()
+
+```
+
+
+### (b) (2 points) Perform an analysis of variance to test whether or not all the population mean oxygen isotopic compositions are the same in the 12 bone types. State your $p$-value and conclusion of the test. You may use the built-in ANOVA functions in R.
+
+```{r}
+anova(lm(Oxygen ~ Bone, data= ex0523))
+
+```
+
+
+### (c) (2 points) Assess the assumption that the population variances are the same in each group by creating a diagnostic plot using the residuals. Does this assumption appear to have been met?
+
+We observe that the assumption is not met. Because itseems the assumptions that group variance hhas to be similar is not met in this case.
+
+### (d) (3 points) Perform a Kruskal-Wallis test using the `kruskal.test()` function. What do you conclude from this test? Compare your conclusion with your result from the analysis of variance in part (b).
+
+Here we reject the null hypothesis in favour of the alternate hypothesis that atleast one mean of the oxygen isotopic composition is not same since p value is less that alpha = 0.1. 
+We notice that Both the conclusions are the same but the p value and test statistics values are different. It is beacause Kruskal-Wallis test performs really good even when the residual plots indicate a problem with assumptions.
+
