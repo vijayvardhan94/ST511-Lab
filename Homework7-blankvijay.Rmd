@@ -1,0 +1,156 @@
+---
+title: "ST 411/511 Homework 7"
+author: "Vijay Tadimeti"
+date: "Winter 2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_notebook: default
+subtitle: Due on March 6
+---
+
+# Instructions
+
+This assignment is due by 11:59 PM, March 6, 2019 on Canvas.
+
+**You should submit your assignment as either a PDF, Word, or html document, which you can compile (should you choose -- recommended) from the provided .Rmd (R Markdown) template.** Please include your code.
+
+# Problems (25 points total)
+
+```{r include=FALSE}
+# Load libraries we need for the assignment
+# Note that you may need to install the multcomp package if you have not done so before
+library(ggplot2)
+library(Sleuth3)
+library(multcomp)
+
+```
+
+## Question 1
+
+### (a) (2 points) In comparing 10 groups, a researcher notices that the sample mean of group 7 is the largest and the sample mean of group 3 is the smallest. The researcher then decides to test the hypothesis that $\mu_7-\mu_3=0$. Why should a multiple comparison procedure be used even though there is only one comparison being made?
+
+Here we see that we have 10 groups, and for the difference between the smallest and largest averages is possible only if there is a large difference between them. We should use a multiple comparison for making sure that the statistical measure of uncertainty is equal to the one that is appropriate for comparing every mean to every other mean. 
+
+### b) (2 points) When choosing coefficients for a contrast, does the choice of $\{C_1, C_2, \ldots, C_I\}$ give a different $t$-statistic than the choice of $\{4C_1, 4C_2, \ldots, 4C_I\}$? Explain why or why not.
+
+It does not give a different t statistic. We observe that the parameter changes from γ to 4γ, hence the estimate changes from g to 4g. We also see that the standard error changes SE(4g) = 4SE(g). Hence we observe that the t ratio is not changed. Hence we can multiply the coefficients by one common factor to make all the coefficients into integers if needed.
+
+## Question 2 (Modified from *Sleuth* 6.17)
+
+The relative head length (RHL) is measured for adders (a type of snake) on the Swedish mainland and on groups of islands in the Baltic Sea. Relative head length is adjusted for overall body length, determined separately for males and females. The data are below and additionally you know that the pooled estimate of standard deviation of the RHL measurements was 11.72 based on 230 degrees of freedom.
+
+```{r}
+adder <- data.frame(Locality = c("Uppsala", "In-Fredeln", "Inre Hammnskar", "Norrpada",
+                                 "Karringboskar", "Angskar", "SvenskaHagarna"), 
+                    SampleSize = c(21, 34, 20, 25, 7, 82, 48), 
+                    meanRHL = c(-6.98, -4.24, -2.79, 2.22, 1.27, 1.88, 4.98))
+
+
+```
+
+Consider the question: "Is the average of the mean relative head lengths for snakes on the Swedish mainland equal to the average of the mean relative head lengths for snakes on islands in the Baltic Sea?" Uppsala is the mainland, and the other six localities refer to islands in the Baltic Sea.
+
+### (a) (3 points) Give the coefficients for the linear combination you would use to test this question, and state the null hypothesis you would be testing using statistical notation.
+
+We observe that there are 7 variables given which are Uppsala, In-Fredeln, Inre Hammnskar, Norrpada, Karringboskar, Angskar,SvenskaHagarna
+which we can consider as: C1, C2, C3, C4, C5, C6, C7 and their corresponding values are C1 = 1, followed by C2 = C3 = C4 = C5 = C6 = C7 = -1/6.
+All the coefficients should sum to 0.
+the null hypothesis is: gamma = 1μ1−1/6(μ2+μ3+μ4+μ5+μ6+μ7)
+
+### (b) (4 points) What is the $t$-statistic for testing the hypothesis in part (a)? Please include in your answer your computed values of $g$ and the standard error of $g$.
+
+```{r}
+C1 = 1
+C2 = C3 = C4 = C5 = C6 = C7 = -1/6 #so that they sum to 0.
+g = C1 * -6.98 + (-1/6 * (-4.24 + -2.79 + 2.22 + 1.27 + 1.88 + 4.98))
+g
+
+sp = 11.72
+n1 = 21
+n2 = 34
+n3 = 20
+n4 = 25
+n5 = 7
+n6 = 82
+n7 = 48
+
+standard_error = sqrt(sp^2 * ((C1^2/n1) + (C2^2/n2) + (C3^2/n3) + (C4^2/n4) + (C5^2/n5) + (C6^2/n6) + (C7^2/n7)))
+
+standard_error
+
+m = 0
+tm = (g-m)/standard_error
+tm
+
+```
+
+
+### (c) (2 points) Find the resulting $p$-value and state your conclusion.
+
+```{r}
+I = 7
+n = sum(adder$SampleSize) 
+df = n - I
+2 * (1 - pt(abs(tm),df))
+```
+Here we reject the Null Hypothesis that the average of the mean relative head lengths for snakes on the Swedish mainland is equal to the average of the mean relative head lengths for snakes on islands in the Baltic Sea at significance level alpha = .05 in favor of the alternative hypothesis that the average of the mean relative head lengths for snakes on the Swedish mainland is not equal to the average of the mean relative head lengths for snakes on islands in the Baltic Sea as p value is less than alpha.
+
+## Question 3 (Modified from *Sleuth* 6.21)
+
+Reconsider the education and future income data from your last homework (data: `ex0525`). Find $p$-values and 95% confidence intervals for the difference in means for all pairs of education groups in the following ways:
+
+### (a) (2 points) Using the Tukey-Kramer procedure.
+
+```{r}
+#View(ex0525)
+
+Handicap_Mod <- lm( formula =Income2005 ~ Educ, data = ex0525)
+Handicap_Mod
+
+Income_Mod <- lm(Income2005 ~ Educ , data = ex0525)
+Income_Mod
+Income_Tukey <- glht(Income_Mod, linfct = mcp(Educ = "Tukey"))
+summary(Income_Tukey)
+confint(Income_Tukey)
+
+```
+
+
+### (b) (2 points) Without adjusting for multiple comparisons.
+
+```{r}
+summary(Income_Tukey, test=adjusted("none"))
+confint(Income_Tukey, calpha = univariate_calpha())
+
+```
+
+
+### (c) (3 points) What do you notice by comparing these two methods? Discuss differences in which tests are significant, how wide the confidence intervals are, and which confidence intervals contain 0.
+
+We can say that, without adjustment there is all comparison (10) significant. But when we consider Tukey-Kramer procedure that is with adjustment there is 2 less significant comparisons.
+
+We can also observe that in both the methods the point estimates are the same (as we expect), but the lower and upper bounds are changing, showing that the half-widths of the confidence intervals are changing. 
+
+Hence (>16 - 16) and (<12 - 12) comparisons contain 0 in their confidence interval.
+
+### (d) (3 points) Use the Dunnett procedure to compare every other group to the group with 12 years of education. Look at both the $p$-values and confidence intervals. Which group means apparently differ from the mean for those with 12 years of education?
+
+```{r}
+with(ex0525, levels(Educ)) # print levels before re-leveling
+ex0525$Educ <- with(ex0525, relevel(Educ, ref = "12"))
+with(ex0525, levels(Educ)) # print levels after re-leveling
+Income_Mod <- lm(Income2005 ~ Educ, data = ex0525)
+#Income_Mod
+
+Income_Dunnett <- glht(Income_Mod, linfct = mcp(Educ = "Dunnett"))
+summary(Income_Dunnett)
+confint(Income_Dunnett)
+```
+We can see that all the group mean except <12 years of education differe significantly from the group mean of 12 years of education.
+Here, there is evidence that <12 and 12 years of education have means that are same. All other groups have $p$-values < 0.05 and confidence intervals does not contain 0)
+
+### (e) (2 points) Taking all of these tests together, what general statements would you make about the relationship between Education and Income?
+
+We can see that there's no evidence for the groups <12 - 12 and >16 - 16 that any of the groups have means that are different from the other groups. We observe that (all $p$-values > 0.05, all confidence intervals contain 0).
+

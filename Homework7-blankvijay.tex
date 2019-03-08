@@ -1,0 +1,583 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={ST 411/511 Homework 7},
+            pdfauthor={Vijay Tadimeti},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{ST 411/511 Homework 7}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \subtitle{Due on March 6}
+  \author{Vijay Tadimeti}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{Winter 2019}
+
+
+\begin{document}
+\maketitle
+
+\section{Instructions}\label{instructions}
+
+This assignment is due by 11:59 PM, March 6, 2019 on Canvas.
+
+\textbf{You should submit your assignment as either a PDF, Word, or html
+document, which you can compile (should you choose -- recommended) from
+the provided .Rmd (R Markdown) template.} Please include your code.
+
+\section{Problems (25 points total)}\label{problems-25-points-total}
+
+\subsection{Question 1}\label{question-1}
+
+\subsubsection{\texorpdfstring{(a) (2 points) In comparing 10 groups, a
+researcher notices that the sample mean of group 7 is the largest and
+the sample mean of group 3 is the smallest. The researcher then decides
+to test the hypothesis that \(\mu_7-\mu_3=0\). Why should a multiple
+comparison procedure be used even though there is only one comparison
+being
+made?}{(a) (2 points) In comparing 10 groups, a researcher notices that the sample mean of group 7 is the largest and the sample mean of group 3 is the smallest. The researcher then decides to test the hypothesis that \textbackslash{}mu\_7-\textbackslash{}mu\_3=0. Why should a multiple comparison procedure be used even though there is only one comparison being made?}}\label{a-2-points-in-comparing-10-groups-a-researcher-notices-that-the-sample-mean-of-group-7-is-the-largest-and-the-sample-mean-of-group-3-is-the-smallest.-the-researcher-then-decides-to-test-the-hypothesis-that-mu_7-mu_30.-why-should-a-multiple-comparison-procedure-be-used-even-though-there-is-only-one-comparison-being-made}
+
+Here we see that we have 10 groups, and for the difference between the
+smallest and largest averages is possible only if there is a large
+difference between them. We should use a multiple comparison for making
+sure that the statistical measure of uncertainty is equal to the one
+that is appropriate for comparing every mean to every other mean.
+
+\subsubsection{\texorpdfstring{b) (2 points) When choosing coefficients
+for a contrast, does the choice of \(\{C_1, C_2, \ldots, C_I\}\) give a
+different \(t\)-statistic than the choice of
+\(\{4C_1, 4C_2, \ldots, 4C_I\}\)? Explain why or why
+not.}{b) (2 points) When choosing coefficients for a contrast, does the choice of \textbackslash{}\{C\_1, C\_2, \textbackslash{}ldots, C\_I\textbackslash{}\} give a different t-statistic than the choice of \textbackslash{}\{4C\_1, 4C\_2, \textbackslash{}ldots, 4C\_I\textbackslash{}\}? Explain why or why not.}}\label{b-2-points-when-choosing-coefficients-for-a-contrast-does-the-choice-of-c_1-c_2-ldots-c_i-give-a-different-t-statistic-than-the-choice-of-4c_1-4c_2-ldots-4c_i-explain-why-or-why-not.}
+
+It does not give a different t statistic. We observe that the parameter
+changes from γ to 4γ, hence the estimate changes from g to 4g. We also
+see that the standard error changes SE(4g) = 4SE(g). Hence we observe
+that the t ratio is not changed. Hence we can multiply the coefficients
+by one common factor to make all the coefficients into integers if
+needed.
+
+\subsection{\texorpdfstring{Question 2 (Modified from \emph{Sleuth}
+6.17)}{Question 2 (Modified from Sleuth 6.17)}}\label{question-2-modified-from-sleuth-6.17}
+
+The relative head length (RHL) is measured for adders (a type of snake)
+on the Swedish mainland and on groups of islands in the Baltic Sea.
+Relative head length is adjusted for overall body length, determined
+separately for males and females. The data are below and additionally
+you know that the pooled estimate of standard deviation of the RHL
+measurements was 11.72 based on 230 degrees of freedom.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{adder <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Locality =} \KeywordTok{c}\NormalTok{(}\StringTok{"Uppsala"}\NormalTok{, }\StringTok{"In-Fredeln"}\NormalTok{, }\StringTok{"Inre Hammnskar"}\NormalTok{, }\StringTok{"Norrpada"}\NormalTok{,}
+                                 \StringTok{"Karringboskar"}\NormalTok{, }\StringTok{"Angskar"}\NormalTok{, }\StringTok{"SvenskaHagarna"}\NormalTok{), }
+                    \DataTypeTok{SampleSize =} \KeywordTok{c}\NormalTok{(}\DecValTok{21}\NormalTok{, }\DecValTok{34}\NormalTok{, }\DecValTok{20}\NormalTok{, }\DecValTok{25}\NormalTok{, }\DecValTok{7}\NormalTok{, }\DecValTok{82}\NormalTok{, }\DecValTok{48}\NormalTok{), }
+                    \DataTypeTok{meanRHL =} \KeywordTok{c}\NormalTok{(}\OperatorTok{-}\FloatTok{6.98}\NormalTok{, }\OperatorTok{-}\FloatTok{4.24}\NormalTok{, }\OperatorTok{-}\FloatTok{2.79}\NormalTok{, }\FloatTok{2.22}\NormalTok{, }\FloatTok{1.27}\NormalTok{, }\FloatTok{1.88}\NormalTok{, }\FloatTok{4.98}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+Consider the question: ``Is the average of the mean relative head
+lengths for snakes on the Swedish mainland equal to the average of the
+mean relative head lengths for snakes on islands in the Baltic Sea?''
+Uppsala is the mainland, and the other six localities refer to islands
+in the Baltic Sea.
+
+\subsubsection{(a) (3 points) Give the coefficients for the linear
+combination you would use to test this question, and state the null
+hypothesis you would be testing using statistical
+notation.}\label{a-3-points-give-the-coefficients-for-the-linear-combination-you-would-use-to-test-this-question-and-state-the-null-hypothesis-you-would-be-testing-using-statistical-notation.}
+
+We observe that there are 7 variables given which are Uppsala,
+In-Fredeln, Inre Hammnskar, Norrpada, Karringboskar,
+Angskar,SvenskaHagarna which we can consider as: C1, C2, C3, C4, C5, C6,
+C7 and their corresponding values are C1 = 1, followed by C2 = C3 = C4 =
+C5 = C6 = C7 = -1/6. All the coefficients should sum to 0. the null
+hypothesis is: gamma = 1μ1−1/6(μ2+μ3+μ4+μ5+μ6+μ7)
+
+\subsubsection{\texorpdfstring{(b) (4 points) What is the
+\(t\)-statistic for testing the hypothesis in part (a)? Please include
+in your answer your computed values of \(g\) and the standard error of
+\(g\).}{(b) (4 points) What is the t-statistic for testing the hypothesis in part (a)? Please include in your answer your computed values of g and the standard error of g.}}\label{b-4-points-what-is-the-t-statistic-for-testing-the-hypothesis-in-part-a-please-include-in-your-answer-your-computed-values-of-g-and-the-standard-error-of-g.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{C1 =}\StringTok{ }\DecValTok{1}
+\NormalTok{C2 =}\StringTok{ }\NormalTok{C3 =}\StringTok{ }\NormalTok{C4 =}\StringTok{ }\NormalTok{C5 =}\StringTok{ }\NormalTok{C6 =}\StringTok{ }\NormalTok{C7 =}\StringTok{ }\OperatorTok{-}\DecValTok{1}\OperatorTok{/}\DecValTok{6} \CommentTok{#so that they sum to 0.}
+\NormalTok{g =}\StringTok{ }\NormalTok{C1 }\OperatorTok{*}\StringTok{ }\OperatorTok{-}\FloatTok{6.98} \OperatorTok{+}\StringTok{ }\NormalTok{(}\OperatorTok{-}\DecValTok{1}\OperatorTok{/}\DecValTok{6} \OperatorTok{*}\StringTok{ }\NormalTok{(}\OperatorTok{-}\FloatTok{4.24} \OperatorTok{+}\StringTok{ }\OperatorTok{-}\FloatTok{2.79} \OperatorTok{+}\StringTok{ }\FloatTok{2.22} \OperatorTok{+}\StringTok{ }\FloatTok{1.27} \OperatorTok{+}\StringTok{ }\FloatTok{1.88} \OperatorTok{+}\StringTok{ }\FloatTok{4.98}\NormalTok{))}
+\NormalTok{g}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] -7.533333
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sp =}\StringTok{ }\FloatTok{11.72}
+\NormalTok{n1 =}\StringTok{ }\DecValTok{21}
+\NormalTok{n2 =}\StringTok{ }\DecValTok{34}
+\NormalTok{n3 =}\StringTok{ }\DecValTok{20}
+\NormalTok{n4 =}\StringTok{ }\DecValTok{25}
+\NormalTok{n5 =}\StringTok{ }\DecValTok{7}
+\NormalTok{n6 =}\StringTok{ }\DecValTok{82}
+\NormalTok{n7 =}\StringTok{ }\DecValTok{48}
+
+\NormalTok{standard_error =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(sp}\OperatorTok{^}\DecValTok{2} \OperatorTok{*}\StringTok{ }\NormalTok{((C1}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n1) }\OperatorTok{+}\StringTok{ }\NormalTok{(C2}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n2) }\OperatorTok{+}\StringTok{ }\NormalTok{(C3}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n3) }\OperatorTok{+}\StringTok{ }\NormalTok{(C4}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n4) }\OperatorTok{+}\StringTok{ }\NormalTok{(C5}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n5) }\OperatorTok{+}\StringTok{ }\NormalTok{(C6}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n6) }\OperatorTok{+}\StringTok{ }\NormalTok{(C7}\OperatorTok{^}\DecValTok{2}\OperatorTok{/}\NormalTok{n7)))}
+
+\NormalTok{standard_error}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.769041
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m =}\StringTok{ }\DecValTok{0}
+\NormalTok{tm =}\StringTok{ }\NormalTok{(g}\OperatorTok{-}\NormalTok{m)}\OperatorTok{/}\NormalTok{standard_error}
+\NormalTok{tm}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] -2.720557
+\end{verbatim}
+
+\subsubsection{\texorpdfstring{(c) (2 points) Find the resulting
+\(p\)-value and state your
+conclusion.}{(c) (2 points) Find the resulting p-value and state your conclusion.}}\label{c-2-points-find-the-resulting-p-value-and-state-your-conclusion.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{I =}\StringTok{ }\DecValTok{7}
+\NormalTok{n =}\StringTok{ }\KeywordTok{sum}\NormalTok{(adder}\OperatorTok{$}\NormalTok{SampleSize) }
+\NormalTok{df =}\StringTok{ }\NormalTok{n }\OperatorTok{-}\StringTok{ }\NormalTok{I}
+\DecValTok{2} \OperatorTok{*}\StringTok{ }\NormalTok{(}\DecValTok{1} \OperatorTok{-}\StringTok{ }\KeywordTok{pt}\NormalTok{(}\KeywordTok{abs}\NormalTok{(tm),df))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.007015257
+\end{verbatim}
+
+Here we reject the Null Hypothesis that the average of the mean relative
+head lengths for snakes on the Swedish mainland is equal to the average
+of the mean relative head lengths for snakes on islands in the Baltic
+Sea at significance level alpha = .05 in favor of the alternative
+hypothesis that the average of the mean relative head lengths for snakes
+on the Swedish mainland is not equal to the average of the mean relative
+head lengths for snakes on islands in the Baltic Sea as p value is less
+than alpha.
+
+\subsection{\texorpdfstring{Question 3 (Modified from \emph{Sleuth}
+6.21)}{Question 3 (Modified from Sleuth 6.21)}}\label{question-3-modified-from-sleuth-6.21}
+
+Reconsider the education and future income data from your last homework
+(data: \texttt{ex0525}). Find \(p\)-values and 95\% confidence intervals
+for the difference in means for all pairs of education groups in the
+following ways:
+
+\subsubsection{(a) (2 points) Using the Tukey-Kramer
+procedure.}\label{a-2-points-using-the-tukey-kramer-procedure.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#View(ex0525)}
+
+\NormalTok{Handicap_Mod <-}\StringTok{ }\KeywordTok{lm}\NormalTok{( }\DataTypeTok{formula =}\NormalTok{Income2005 }\OperatorTok{~}\StringTok{ }\NormalTok{Educ, }\DataTypeTok{data =}\NormalTok{ ex0525)}
+\NormalTok{Handicap_Mod}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Coefficients:
+## (Intercept)    Educ13-15       Educ16      Educ<12      Educ>16  
+##       36865         8011        33132        -8563        39991
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Income_Mod <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(Income2005 }\OperatorTok{~}\StringTok{ }\NormalTok{Educ , }\DataTypeTok{data =}\NormalTok{ ex0525)}
+\NormalTok{Income_Mod}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Coefficients:
+## (Intercept)    Educ13-15       Educ16      Educ<12      Educ>16  
+##       36865         8011        33132        -8563        39991
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Income_Tukey <-}\StringTok{ }\KeywordTok{glht}\NormalTok{(Income_Mod, }\DataTypeTok{linfct =} \KeywordTok{mcp}\NormalTok{(}\DataTypeTok{Educ =} \StringTok{"Tukey"}\NormalTok{))}
+\KeywordTok{summary}\NormalTok{(Income_Tukey)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Linear Hypotheses:
+##                  Estimate Std. Error t value Pr(>|t|)    
+## 13-15 - 12 == 0      8011       2201   3.639 0.002407 ** 
+## 16 - 12 == 0        33132       2571  12.885  < 1e-04 ***
+## <12 - 12 == 0       -8563       4000  -2.141 0.192917    
+## >16 - 12 == 0       39991       2649  15.098  < 1e-04 ***
+## 16 - 13-15 == 0     25121       2774   9.058  < 1e-04 ***
+## <12 - 13-15 == 0   -16574       4133  -4.010 0.000556 ***
+## >16 - 13-15 == 0    31980       2846  11.239  < 1e-04 ***
+## <12 - 16 == 0      -41696       4341  -9.604  < 1e-04 ***
+## >16 - 16 == 0        6858       3140   2.184 0.176474    
+## >16 - <12 == 0      48554       4388  11.066  < 1e-04 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Adjusted p values reported -- single-step method)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{confint}\NormalTok{(Income_Tukey)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Confidence Intervals
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Quantile = 2.7046
+## 95% family-wise confidence level
+##  
+## 
+## Linear Hypotheses:
+##                  Estimate    lwr         upr        
+## 13-15 - 12 == 0    8011.0607   2057.5359  13964.5855
+## 16 - 12 == 0      33132.0768  26177.6652  40086.4885
+## <12 - 12 == 0     -8563.4475 -19382.0985   2255.2034
+## >16 - 12 == 0     39990.5665  32826.5062  47154.6268
+## 16 - 13-15 == 0   25121.0161  17619.7682  32622.2640
+## <12 - 13-15 == 0 -16574.5083 -27752.5263  -5396.4902
+## >16 - 13-15 == 0  31979.5058  24283.4913  39675.5203
+## <12 - 16 == 0    -41695.5244 -53437.2224 -29953.8264
+## >16 - 16 == 0      6858.4897  -1635.5096  15352.4889
+## >16 - <12 == 0    48554.0140  36686.9424  60421.0857
+\end{verbatim}
+
+\subsubsection{(b) (2 points) Without adjusting for multiple
+comparisons.}\label{b-2-points-without-adjusting-for-multiple-comparisons.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(Income_Tukey, }\DataTypeTok{test=}\KeywordTok{adjusted}\NormalTok{(}\StringTok{"none"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Linear Hypotheses:
+##                  Estimate Std. Error t value Pr(>|t|)    
+## 13-15 - 12 == 0      8011       2201   3.639 0.000279 ***
+## 16 - 12 == 0        33132       2571  12.885  < 2e-16 ***
+## <12 - 12 == 0       -8563       4000  -2.141 0.032380 *  
+## >16 - 12 == 0       39991       2649  15.098  < 2e-16 ***
+## 16 - 13-15 == 0     25121       2774   9.058  < 2e-16 ***
+## <12 - 13-15 == 0   -16574       4133  -4.010 6.23e-05 ***
+## >16 - 13-15 == 0    31980       2846  11.239  < 2e-16 ***
+## <12 - 16 == 0      -41696       4341  -9.604  < 2e-16 ***
+## >16 - 16 == 0        6858       3140   2.184 0.029062 *  
+## >16 - <12 == 0      48554       4388  11.066  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Adjusted p values reported -- none method)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{confint}\NormalTok{(Income_Tukey, }\DataTypeTok{calpha =} \KeywordTok{univariate_calpha}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Confidence Intervals
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Quantile = 1.9609
+## 95% confidence level
+##  
+## 
+## Linear Hypotheses:
+##                  Estimate    lwr         upr        
+## 13-15 - 12 == 0    8011.0607   3694.7196  12327.4018
+## 16 - 12 == 0      33132.0768  28090.0868  38174.0669
+## <12 - 12 == 0     -8563.4475 -16407.0342   -719.8609
+## >16 - 12 == 0     39990.5665  34796.5799  45184.5531
+## 16 - 13-15 == 0   25121.0161  19682.5665  30559.4657
+## <12 - 13-15 == 0 -16574.5083 -24678.6382  -8470.3783
+## >16 - 13-15 == 0  31979.5058  26399.8492  37559.1623
+## <12 - 16 == 0    -41695.5244 -50208.3257 -33182.7231
+## >16 - 16 == 0      6858.4897    700.2894  13016.6899
+## >16 - <12 == 0    48554.0140  39950.3161  57157.7120
+\end{verbatim}
+
+\subsubsection{(c) (3 points) What do you notice by comparing these two
+methods? Discuss differences in which tests are significant, how wide
+the confidence intervals are, and which confidence intervals contain
+0.}\label{c-3-points-what-do-you-notice-by-comparing-these-two-methods-discuss-differences-in-which-tests-are-significant-how-wide-the-confidence-intervals-are-and-which-confidence-intervals-contain-0.}
+
+We can say that, without adjustment there is all comparison (10)
+significant. But when we consider Tukey-Kramer procedure that is with
+adjustment there is 2 less significant comparisons.
+
+We can also observe that in both the methods the point estimates are the
+same (as we expect), but the lower and upper bounds are changing,
+showing that the half-widths of the confidence intervals are changing.
+
+Hence (\textgreater{}16 - 16) and (\textless{}12 - 12) comparisons
+contain 0 in their confidence interval.
+
+\subsubsection{\texorpdfstring{(d) (3 points) Use the Dunnett procedure
+to compare every other group to the group with 12 years of education.
+Look at both the \(p\)-values and confidence intervals. Which group
+means apparently differ from the mean for those with 12 years of
+education?}{(d) (3 points) Use the Dunnett procedure to compare every other group to the group with 12 years of education. Look at both the p-values and confidence intervals. Which group means apparently differ from the mean for those with 12 years of education?}}\label{d-3-points-use-the-dunnett-procedure-to-compare-every-other-group-to-the-group-with-12-years-of-education.-look-at-both-the-p-values-and-confidence-intervals.-which-group-means-apparently-differ-from-the-mean-for-those-with-12-years-of-education}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{with}\NormalTok{(ex0525, }\KeywordTok{levels}\NormalTok{(Educ)) }\CommentTok{# print levels before re-leveling}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "12"    "13-15" "16"    "<12"   ">16"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ex0525}\OperatorTok{$}\NormalTok{Educ <-}\StringTok{ }\KeywordTok{with}\NormalTok{(ex0525, }\KeywordTok{relevel}\NormalTok{(Educ, }\DataTypeTok{ref =} \StringTok{"12"}\NormalTok{))}
+\KeywordTok{with}\NormalTok{(ex0525, }\KeywordTok{levels}\NormalTok{(Educ)) }\CommentTok{# print levels after re-leveling}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "12"    "13-15" "16"    "<12"   ">16"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Income_Mod <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(Income2005 }\OperatorTok{~}\StringTok{ }\NormalTok{Educ, }\DataTypeTok{data =}\NormalTok{ ex0525)}
+\CommentTok{#Income_Mod}
+
+\NormalTok{Income_Dunnett <-}\StringTok{ }\KeywordTok{glht}\NormalTok{(Income_Mod, }\DataTypeTok{linfct =} \KeywordTok{mcp}\NormalTok{(}\DataTypeTok{Educ =} \StringTok{"Dunnett"}\NormalTok{))}
+\KeywordTok{summary}\NormalTok{(Income_Dunnett)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Dunnett Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Linear Hypotheses:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## 13-15 - 12 == 0     8011       2201   3.639   0.0011 ** 
+## 16 - 12 == 0       33132       2571  12.885   <1e-04 ***
+## <12 - 12 == 0      -8563       4000  -2.141   0.1180    
+## >16 - 12 == 0      39991       2649  15.098   <1e-04 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Adjusted p values reported -- single-step method)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{confint}\NormalTok{(Income_Dunnett)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##   Simultaneous Confidence Intervals
+## 
+## Multiple Comparisons of Means: Dunnett Contrasts
+## 
+## 
+## Fit: lm(formula = Income2005 ~ Educ, data = ex0525)
+## 
+## Quantile = 2.4808
+## 95% family-wise confidence level
+##  
+## 
+## Linear Hypotheses:
+##                 Estimate    lwr         upr        
+## 13-15 - 12 == 0   8011.0607   2550.2474  13471.8740
+## 16 - 12 == 0     33132.0768  26753.2097  39510.9440
+## <12 - 12 == 0    -8563.4475 -18486.7510   1359.8559
+## >16 - 12 == 0    39990.5665  33419.4011  46561.7318
+\end{verbatim}
+
+We can see that all the group mean except \textless{}12 years of
+education differe significantly from the group mean of 12 years of
+education. Here, there is evidence that \textless{}12 and 12 years of
+education have means that are same. All other groups have \(p\)-values
+\textless{} 0.05 and confidence intervals does not contain 0)
+
+\subsubsection{(e) (2 points) Taking all of these tests together, what
+general statements would you make about the relationship between
+Education and
+Income?}\label{e-2-points-taking-all-of-these-tests-together-what-general-statements-would-you-make-about-the-relationship-between-education-and-income}
+
+We can see that there's no evidence for the groups \textless{}12 - 12
+and \textgreater{}16 - 16 that any of the groups have means that are
+different from the other groups. We observe that (all \(p\)-values
+\textgreater{} 0.05, all confidence intervals contain 0).
+
+
+\end{document}

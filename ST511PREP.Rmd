@@ -1,0 +1,268 @@
+---
+title: "Preparation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdopwn for ST511 Preparation
+
+Frequentist interpretation: If you were to flip the coin many, many times, in the long run, the proportion of times the coin would come up heads would be 0.5.
+
+A probability distribution provides the probability of occurrence of each possible outcome.
+
+The population of interest is the group to which you would like your answer to apply.
+ex: OSU students
+
+A variable is a measurement that can be made on each member of the population.
+ex: OSU students: major department (categorical variable)
+
+A parameter is a summary measure for a set of variable values in the population.
+
+#View is for viewing the datasets
+```{r}
+#View(precip)
+mean(precip)
+sd(precip)
+```
+When we design studies to gather data, we often choose a sample from the population.
+
+*Parameter -> Population
+*Statistic -> Sample
+Statistic can change but the parameter is fixed.
+
+observations are sampled at random from the population of interest -> to avoid bias.
+
+#in r we create a vector by 
+```{r}
+pop <- c(1,1,2,2,2,3,3,4,4,5,5,6)
+mean(pop)
+sd(pop)
+var(pop)
+
+
+```
+The sample mean is an estimate of the population mean.
+
+**sampling distribution for the sample average**
+
+example: 
+How many different samples of size 3 could we draw from a population of size 12?
+(12) (in words, 12 choose 3) = 12! / 3!(12-3)! = 220
+
+#we basically find the number of possible samples we can obtain from the population and make a distribution out of it, which is the sampling distribution for the sample mean
+
+The population mean parameter is the usual arithmetic average (mean) of the variable values for all members of the
+population.
+
+The symbol μ (mu) is often used to represent the population
+mean.
+
+The population mean is one example of a location parameter. It describes a “typical” value for that variable in the population.
+
+
+As the values are together the variance is smaller.
+ex: 3, 3.5, 4, 4.5, 5
+
+The population variance is one example of a scale parameter. It describes the “spread” of values for that variable in the population.
+
+**total area under the distribution adds up to 1. If we used different bin widths, we can see we are starting to get something that looks more like a continuous curve.
+
+Normal distribution: is also called the gaussian distirbution.(commonly called the bell curve.)
+
+Basically its a family of distributions.
+
+**The Central Limit Theorem**
+If the population distribution of a variable X has population mean μ and (finite) population variance σ2, then the sampling distribution of the sample mean becomes closer and closer to a Normal distribution as the sample size n increases.
+
+In essence the sampling distribution of the sample mean becomes closer and closer to the normal distribution, as the sample size increases. That is: it tends to look more and more like a normal curve.
+
+ex: We know by the Central Limit Theorem that the sampling distribution is approximately Normal(μ, σ2/n), which is Normal(100, 2000/20) in this case.
+
+```{r}
+pnorm(87.5, mean=100, sd=sqrt(2000/20))
+```
+
+#note: there is a difference between installing and loading a package in r.
+
+Inferences from the central limit theorem:
+
+The average value of the sample mean is exactly the population mean.
+
+The variance of the sample mean is exactly the population variance divided by the sample size.
+
+**what it means is that: For distributions which are skewed, or that have a shape that is not normal, increasing the sample size makes it look like a normal curve: thanks to clt.
+
+So,  How large of a sample is large enough?
+ans: Depends on the shape of the population distribution.
+
+#we genrally use this with the central limit theorem:
+What is the probability that the sample mean is less than 29?
+
+```{r}
+pnorm(29, mean=30, sd=sqrt(20/50))
+```
+
+Cumulative probability = area under the curve. 
+#The pnorm(q, mean, sd) function gives the cumulative probability at the value q for a normal distribution with mean mean and standard deviation sd.
+
+**points to remember:
+(Left) If q is LESS than mean, the cumulative probability will be LESS than 0.5.
+(Right) If q is GREATER than mean, the cumulative probability will be GREATER than 0.5.
+If q is less than mean, area under the curve is less than half.
+If q is greater than the mean then the area under the curve is greater.
+q is less than mean -> left side
+q is greater than mean -> right side
+q = mean -> middle
+
+ASK: Does standardizing mean that we can look up values on the Z table?
+or does it mean that there are two different ways to look up the probability value?
+
+Quantiles-> Qnorm function: 
+qnorm(0.1, mean=30, sd=sqrt(2/5)),
+
+If we use qnorm with a value of p GREATER than 0.5, should the quantile be larger or smaller than the mean?
+Larger
+If we use qnorm with a value of p LESS than 0.5, should the quantile be larger or smaller than the mean?
+Smaller
+
+**study design-> ask more about it:
+
+Study Design, Inferences
+1) randomized experiment the investigator controls the assignment of units to groups, and uses a chance mechanism to make the assignment.
+
+2)observational study the group status of the units is beyond the control of the investigator
+
+ASK: What is the placebo effect?
+
+Note:Causal conclusions can be drawn from randomized experiments, but not from observational studies.
+In randomized experiments, we do not think that one group is better than the other. 
+
+**A confounding variable is related to both group membership and to the outcome. Its presence makes it hard to establish the outcome as being a direct consequence of group membership.**
+
+Randomized experiments may not always be possible or feasible -> why?
+• Establishing causation is not always the goal -> why?
+• Establishing causation may be done in other ways -> how?
+
+--Hypothesis Testing--
+
+Example: H0 : μ = 50 (the null hypothesis is that the population mean Tomatometer score is 50)
+
+Example: HA: μ ̸= 50 (the alterntive hypothsis is that the population mean Tomatometer score is not equal to 50)
+
+X bar is the sample mean.
+Whenever we have a null and an alternate hypothesis, we decide between them using a test statistic.
+
+Z = Xbar - mu0/root of sigma squared by n
+
+we only know the sample mean, through which we can find out the population mean.
+
+```{r}
+xbar = 58.67
+muo = 50
+a = xbar - muo 
+a
+sigma2byn = sqrt((910.16)/15)
+sigma2byn
+a/sigma2byn
+```
+our z value above is 1.113
+what did we want to find out?: we wanted to find out if the population mean was equal to 50.
+For a hypotheis we do the following things:
+
+Reject
+Fail to Reject
+
+but now the question arises: okay we now know that if we have a null hypothesis and an alternate hypothesis, we can calculate a z statistic and this will tell us to reject or fail to reject by using something called as, a significance value - alpha
+--> ask type 1 error, and what is it.
+
+** if the test statistic is less than alpha, we reject the null hypothesis.
+** if the test statistic is more than the alpha, we fail to reject the null hypothesis.
+
+***The z-test is used to test hypotheses about a population
+mean when the population variance σ2 is known.***
+
+null hypothesis -> is of the form equal to
+
+alternative hypotheis: 
+less than 
+greater than
+two sided -> not equal to
+
+ASK:
+A p-value associated with a hypothesis test of some null hypothesis H0 versus some alternative HA is the probability under the null hypothesis of observing a result at least as extreme as the statistic you observed.(what does this mean?)
+
+**we can obtain the p value from the z statistic. in the question, it will be mentioned if its a two sided alternative, or one sided lesser or one sided greater..
+
+one side lesser -> pnorm(z)
+one side greater -> 1-pnorm(z)
+two sided -> 2(1-pnorm(abs(z)))
+
+the p value obtianed from these tests is compared witht the alpha value, depending on which we reject or failt to reject the null hypothesis.
+Hence,
+
+A test statistic is a statistic used to measure the plausibility of an alternative hypothesis relative to a null hypothesis.if is less than alpha we reject the null hypothesis, else if p > alpha, we fail to reject the null hypothesis.
+
+ASK: randomization test example from lecture 7.
+
+So far we have seen the z test where, the population variance sigma squared was known, and from that we calculated the z statistic and then found out the p value to compare with alpha, to conclude whether to reject the null hypothesis or to fail to reject the null hypothesis.
+
+*****Now What do we do when we do not know the population variance σ2?*****
+
+The mean of the sampling distribution of s2 is the true population
+value σ2.
+
+in the z statistic, replace the population variance with the sample variance.
+
+ASK: null distribution
+So the t statistic is also associated with a distribution called the t - distribution.
+
+the t distribution is also a family of distributions and defined by the degrees of freedom. 
+ASK: what exactly are the degrees of freedom?
+
+
+A t-distribution looks a lot like a normal distribution, but has heavier tails and a sharper center peak.
+
+As the degrees of freedom parameter ν increases, the t(ν)-distribution becomes closer and closer to the N(0,1) distribution.
+
+So now the t statistic is actually: t(muo) = (xbar - muo)/(s2/n)
+
+when we are using the t statistic:
+```{r}
+qt(0.05, df = 3)
+1 - pt(1,df = 3)
+
+```
+IMP:
+
+Conclusion: We reject the null hypothesis H0 : μ = 8 at the α = 0.05 significance level in favor of the alternative
+HA : μ < 8. It appears that students got fewer than 8 hours of sleep last night.
+
+***two sample t test***
+
+note: standard error is sqrt of s squared by n.
+#two sample t test#
+in a two sample t test we consider more than one population. I.e, two populations.
+population 1 , mean 1, variance 1
+population 2, mean 2, variance 2
+
+ASK: why?
+But there is a complication, we have to either:
+• Assume the population variances are equal to each other; OR • Do not assume the population variances are equal to each
+other.
+
+in t statistic, we have something called as the pooled variance.
+
+σ12 = σ22 = σ2, we can estimate the common population variance σ2 using the pooled variance estimate:
+
+two-sample t-statistic:
+delta not is the difference between the two population means, and the degress of freedom for a two sample t test is n1 + n2 - 2
+
+******paired t test*****
+
+The paired t-test is appropriate when there is some natural pairing between observations in one sample and observations in the other sample.
+
+
+
