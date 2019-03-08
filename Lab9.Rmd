@@ -1,0 +1,290 @@
+---
+title: 'ST 411/511 Lab 9: Simple Linear Regression'
+date: March 8, 2019
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we will use in this lab
+library(ggplot2)
+library(Sleuth3)
+```
+
+## Outline
+
+In today's lab we will look at simple linear regression
+
+- Scatter plots
+- Model fitting using R
+- Interpreting R output
+- Assessing model assumptions
+- Inference
+
+As usual, it may be helpful to knit the lab and view in the Viewer pane so that the mathematical notation and formatting are easier to interpret.
+
+### Case Study 7.1.1
+
+For this lab, I'll step you through an analysis of the first case study in Chapter 7 of *The Statistical Sleuth*. These data are Edwin Hubble's original data on the recession velocities and distance from Earth of 24 nebulae. Here's a look:
+
+```{r}
+?case0701
+head(case0701)
+```
+
+In this study, *Velocity* was measured in km/sec, and it was determined by the red shift in the spectrum of light from each nebula. *Distance* (in megaparsecs) was measured by comparing mean luminosities of the nebulae to those of certain star types. Here's a plot (replicates Display 7.1 in *The Sleuth*):
+
+```{r}
+ggplot(data = case0701, aes(x=Velocity, y=Distance)) +
+  geom_point() +
+  theme_linedraw()
+```
+
+One theory suggests that after the universe came into being with a Big Bang, and if the material in the universe traveled out from the origin of the the Big Bang at a constant velocity, there there should be a linear relationship between distance and velocity:
+
+> $Distance = T \times Velocity$,
+
+where $T$ provides an estimate of the time since the Big Bang (i.e., of the age of the universe).
+
+Notice that the equation above is not the typical equation for a line---it has no $y$-intercept.  I'll fit two models, one with a $y$-intercept and one without, but if we can't reject the model with an intercept, the constant velocity model is suspect. 
+
+#### Simple Linear Regression
+
+The simple linear regression model assumes a linear relationship between the mean of a response variable and a single quantitative explanatory variable.  In the case of the Big Bang data, this means that I'll fit a model for the mean *Distance* as a linear function of *Velocity*:
+
+> $\mu(Distance|Velocity) = \beta_0 + \beta_1Velocity$.
+
+In this expression, $\mu(Distance|Velocity)$ (read: the population mean Distance for a given Velocity), $\beta_0$ is the $y$-intercept parameter and $\beta_1$ is the slope parameter. To fit this model in R, we use the `lm()` function (lm stands for "linear model"):
+
+```{r}
+mod1 <- lm(Distance ~ Velocity, data = case0701)
+summary(mod1)
+```
+#we use this to write the equation for the regression line
+Y = 0.399 + 0.0014x
+From this model output, $\hat{\beta}_0 = 0.399$ (SE = 0.119) and $\hat{\beta}_1 = 0.00137$ (SE = 0.000228).  Also, according to the $p$-value associated with the estimate of the $y$-intercept, $p = 0.0028$, there is convincing evidence that the $y$-intercept is different from zero. 
+
+For more up-to-date information about the expansion of the universe, see:
+
+- https://www.nasa.gov/feature/goddard/2016/nasa-s-hubble-finds-universe-is-expanding-faster-than-expected 
+- https://www.nytimes.com/2019/02/25/science/cosmos-hubble-dark-energy.html
+
+I'll also fit a regression model without a $y$-intercept, since that's what the theory suggested, and just to demonstrate how it's done in R:
+
+```{r}
+mod2 <- lm(Distance ~ Velocity - 1, data = case0701)
+summary(mod2)
+```
+#lm is linear model -1 indicates that we dont want to use intercept
+
+Just to be clear, the evidence from *mod1* is that we should retain the y-intercept in the model---I just fit *mod2* to demonstrate a few things:
+
+1. The way to fit a no-intercept model in R is to include a "- 1" at the end of the right hand side of the model formula.
+
+2. We can compare two regression models using the *anova* function, where we are thinking of the two models as nested (i.e. the model with no intercept is a special case of the model with an intercept, so it is nested inside it.)
+
+```{r}
+anova(mod2, mod1)
+```
+
+Notice that in this *extra sum of squares* comparison, the no-intercept model is the reduced model and the model with a $y$-intercept is the full model. Notice also that the $p$-value associated with the extra sum of squares $F$-statistic is 0.0028, which is the *same* p-value from *mod1* that provided convincing evidence of a non-zero $y$-intercept. Here, we have the parallel convincing evidence against the reduced model (no-intercept) in favor of the full model ($y$-intercept model). Basically this is saying: did adding the intercept significantly improve our model fit? And the answer is yes, so we prefer the $y$-intercept model.
+
+
+#### Plotting a Model Fit
+
+Now, I'll use the *mod1* model object to overlay an estimated simple linear regression model on the scatter plot I created earlier:
+
+```{r}
+bhat <- mod1$coef
+ggplot(data = case0701, aes(Velocity, Distance)) +
+  geom_point() + 
+  theme_linedraw() +
+  geom_abline(slope = bhat[2], intercept = bhat[1])
+```
+
+I have added a line using `abline()` where I have specified that the slope of that line will be the second estimated coefficient of the model (i.e. $\hat{\beta}_1$) and the intercept will be the first estimated coefficient of the model (i.e. $\hat{\beta}_0$).
+
+We could have also done this using the `geom_smooth()` function:
+
+```{r}
+ggplot(data = case0701, aes(Velocity, Distance)) +
+  geom_point() + 
+  theme_linedraw() +
+  geom_smooth(method="lm", se=FALSE)
+```
+
+Note that is you do not specify `method="lm"` in `geom_smooth()`, the default is to do a style of local smoothing which results in a non-straight line, so we need to be specific that we want the regression line to be displayed. Additionally, the default in `geom_smooth()` is `se=TRUE`, which prints confidence intervals around the line. It's fine to leave those, I just removed them here so we could focus more directly on the regression line.
+
+#### Model Assumptions and Residuals
+
+There are several assumptions behind the simple linear regression model:
+
+1. The mean of each response is related to the explanatory variable by a linear function: $\mu(Y|X) = \beta_0 + \beta_1X$.
+
+2. All pairs of points, (explanatory, response) are statistically independent.
+
+3. The variance of each response is the same for all values of the explanatory variable.
+
+4. All responses are taken from Normally shaped populations.
+
+As we've discussed before, the independence assumption has to be evaluated by thinking carefully about how observations are collected.  Assumptions 1, 3 and 4 are often easier to evaluate by looking at plots of *residuals*.
+
+```{r}
+case0701$resid <- mod1$resid
+
+ggplot(data = case0701, aes(Velocity, resid)) + 
+  geom_point() + 
+  theme_linedraw() +
+  geom_hline(yintercept = 0, lty = 2, color="red")
+```
+
+We examine this plot to determine whether there is any systematic pattern---what we hope to see is a random scatter of points above and below the $y = 0$ horizontal (dashed red) line, and we hope to see that the variance (spread) of those points in the vertical direction remains the same as we look horizontally from left to right. This plot looks pretty good---I don't see anything systematic here, so that tells me that the linear model fit is adequate; and I don't see a change in the variance. So, I've verified that assumptions 1 and 3 are reasonable here. 
+
+Think about what a residual plot might look like if one of these assumptions were violated.
+
+As in the case of the two-sample $t$-test and the one-way ANOVA $F$-test, the Normality assumption is a fairly weak assumption, and the simple linear regression model *can* be fairly robust to departures from Normality, although outliers can cause some problems (more in Chapter 8 of *The Statistical Sleuth*). For now, I'll show you a *normal quantile-quantile plot*. Remember that we saw how to make a quantile-quantile plot for the $t$-distribution on Homework 4.
+
+This is the same idea, where we are comparing the actual quantiles of data we observe with the theoretical quantiles of a specified distribution. This allows us to assess whether the data plausibly come from the theoretical distribution.
+
+Here we have the theoretical quantiles for the distribution of the residuals (normal) on the $x$-axis, and the observed quantiles on the $y$-axis.
+
+```{r}
+ggplot(case0701, aes(sample=resid)) +
+  stat_qq() +
+  theme_linedraw()
+```
+
+In this plot, what we hope to see is all of the points (residuals from *mod1* in this case) lined up fairly well along a line. This appears to be the case for the residuals from *mod1*, so I'm *not at all* concerned about violating any of the model assumptions. 
+
+(Note: before when we looked at quantile-quantile plots for the $t$-distribution, we compared with the line $y=x$. Here we could do that if we had *standardized* the residuals first (subtract the mean and divide by the standard deviation for each residual), since it is the standard normal distribution that is used as comparison. We don't need to take that extra step, so instead of comparing with the line $y=x$, we just compare with a straight line.)
+
+### Inference
+
+#### Inference for the regression parameters
+
+The model summary for the full (including intercept) model already does hypothesis tests for whether or not the regression coefficients equal zero. Both $p$-values are significant at the $\alpha=0.05$ level we can see from the output below. So in each case we would conclude the true population parameter is not zero. In the case of the slope, we would conclude that there is likely a linear trend in the mean of Distance, as a function of Velocity.
+
+```{r}
+summary(mod1)
+```
+
+
+You can easily obtain confidence intervals for the model parameters using the *confint* function:
+
+```{r}
+confint(mod1, level=0.95)
+```
+
+The first confidence interval (Intercept) is for the $y$-intercept, $\beta_0$, and the second confidence interval (Velocity) is for the slope, $\beta_1$. 
+
+Here's how we could have found those by hand: the point estimate plus/minus $t_{(n-2)/1-\alpha/2}$ times the standard error of the estimate:
+
+```{r}
+mod1$coef - qt(0.975, df=22)*summary(mod1)$coef[,2]
+mod1$coef + qt(0.975, df=22)*summary(mod1)$coef[,2]
+```
+
+Try printing out `mod1$coef` and `summary(mod1)$coef[,2]` to make sure you understand what those bits of code are doing and which numbers they are pulling from the linear regression model summary output.
+
+(Note the presentation of these confidence intervals is a little different here, but the numbers are the same.)
+
+Try using the `confint()` function to get confidence intervals at a different confidence level.
+
+#### Inference for the subpopulation mean parameter at $X=X_0$
+
+Let's consider a nebula with velocity 800 km/sec. Let's form a 90% confidence interval for the mean distance at that velocity. We can do this using the `predict()` function and setting `interval="confidence"` as well as the confidence level we want.
+
+```{r}
+predict(mod1, newdata=data.frame("Velocity"=800), interval="confidence", level=0.90)
+```
+
+The `newdata` argument is how we specify the $x$ value for our new nebula. The R printout gives us the fitted value for this new data point, as well as the upper and lower bounds for our specified confidence interval.
+
+We could have also calculated this by hand (and it's useful to think about how the point estimate and standard error are being calculated.)
+
+```{r}
+est <- mod1$coef[1] + mod1$coef[2]*800
+sig.hat <- sqrt(sum(mod1$resid^2)/22)
+se.c <- sig.hat*sqrt(1/24 + (800-mean(case0701$Velocity))^2/(23*var(case0701$Velocity)))
+
+est - qt(0.95, df=22)*se.c
+est + qt(0.95, df=22)*se.c
+```
+
+(Ignore the way it says Intercept -- that's just a label that R propagates through, it doesn't actually pertain to this output.)
+
+Try printing out a few bits of code to make sure you understand which values are being used. For example, what is `mod1$coef[1]`? What is `sig.hat`?
+
+
+#### Inference for the predicted value of $Y$ at $X=X_0$
+
+Let's consider instead forming a prediction interval for the same nebula with velocity 800 km/s. We can do this using the `predict()` function and setting `interval="prediction"` as well as the confidence level we want.
+
+Remember that prediction intervals are different than confidence intervals -- confidence intervals are narrower because we are giving plausible values for the *mean* $y$ at a particular $x$. Prediction intervals give plausible values for *any* value of $y$ at a particular $x$.
+
+```{r}
+predict(mod1, newdata=data.frame("Velocity"=800), interval="prediction", level=0.90)
+```
+
+We could have also calculated this by hand -- we'll use several of the pieces we already calculated.
+
+```{r}
+se.p <- sig.hat*sqrt(1 + 1/24 + (800-mean(case0701$Velocity))^2/(23*var(case0701$Velocity)))
+
+est - qt(0.95, df=22)*se.p
+est + qt(0.95, df=22)*se.p
+
+```
+
+(Again ignore the way it says Intercept -- that's just a label that R propagates through, it doesn't actually pertain to this output.)
+
+Notice that this prediction interval is wider than the confidence interval -- this will always be true.
+
+We can plot the two intervals:
+
+```{r}
+preds <- predict(mod1, newdata=data.frame(Velocity=case0701$Velocity), interval="prediction", level=0.9)
+case0701$lwr <- preds[,2]
+case0701$upr <- preds[,3]
+
+ggplot(case0701, aes(x=Velocity, y=Distance)) +
+  geom_point() +
+  theme_linedraw() +
+  geom_ribbon(aes(ymin=lwr, ymax=upr), alpha=0.2, fill="red") +
+  geom_smooth(method="lm", se=TRUE, level=0.9)
+```
+
+The blue line is the regression line. The wider red band is the prediction intervals. The thinner gray band is the confidence intervals.
+
+### A Few Other Things
+
+Let's take another look at the summary output from an `lm()` model object:
+
+```{r}
+summary(mod1)
+```
+
+At the bottom of the output:
+
+1. The *Residual standard error*, in this case 0.4056, is the estimate of $\sigma$, the population standard deviation assumed to be the same for all of the *Distance* values. We could also have found this as the sum of squared residuals divided by the degrees of freedom (and we already did this above):
+
+```{r}
+sqrt(sum(mod1$resid^2)/22)
+```
+
+2. The *Multiple R-squared*, in this case 0.6226, is the proportion of variance in the *Distance* values that is explained by the linear regression model. This is also the same thing as the sample correlation between *Distance* and *Velocity*, squared:
+
+```{r}
+cor(case0701$Distance, case0701$Velocity)^2
+```
+
+
+3. The *F-Statistic*, 36.29 in this case, is the extra sum of squares $F$-statistic for comparing *mod1* to the model that only has an intercept term. In that comparison, the intercept-only model is the reduced model and *mod1* is the full model, and so the very small $p$-value ($p << 0.0001$) provides overwhelming evidence against the reduced model and in favor of *mod1*.
+
+(Bonus: if you want to further test your understanding, try fitting the intercept-only model using the notation `y ~ 1` so no $x$ variable is specified. Compare this nested model with *mod1* using an Extra Sum of Squares $F$-test, and confirm that you get the same $p$-value as in the bottom row of the *mod1* summary output above.)
