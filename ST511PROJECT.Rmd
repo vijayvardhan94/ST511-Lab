@@ -1,0 +1,73 @@
+---
+title: "ST511_Projecr"
+output: html_document
+---
+Introduction:
+
+For this project I have decided to use the IMDB Top 250 Movies database. It contains columns/variables that include Rank, Rating, Title of the movie and the number of Votes.
+
+```{r}
+path <- file.path("~", "/Desktop/ST511", "top250.csv" )
+#read.csv(path, stringsAsFactors = FALSE)
+imdbmovies <- read.csv(path, stringsAsFactors = FALSE)
+View(imdbmovies)
+```
+
+
+```{r}
+names(imdbmovies)
+```
+
+Including an exploratory plot. Here I chose to include a histogram.
+```{r}
+ggplot(imdbmovies, aes(x=Rating)) + geom_histogram(binwidth=0.1, color="black", alpha=0.9, fill="yellow") + ggtitle("Ratings Histogram") + 
+  xlab("Ratings of movies in imdb top 250")
+```
+
+```{r}
+var(imdbmovies$Rating)
+```
+We now take a sample out of this data:
+
+```{r}
+set.seed(411511)
+samp <- sample(1:nrow(imdbmovies), size=50)
+
+imdbmovies[samp, c(3,2)]
+```
+
+
+```{r}
+
+```
+
+**Null hypothesis**: $H_0:\mu=7.5$. In words: the null hypothesis is that the population mean rating is 7.5.
+
+**Alternative hypothesis**: $H_A:\mu>6.5$. In words: the alternative hypothesis is that the population mean IMDB score is greater than 7.5. This is a one-sided greater alternative hypothesis.
+
+We now calculate the Z value, i.e the test statistic:
+
+```{r}
+set.seed(411511)
+samp <- sample(1:nrow(imdbmovies), size=20)
+
+Xbar <- mean(imdbmovies$Rating[samp])
+sigma2 <- var(imdbmovies$Rating)
+  
+Z <- (Xbar - 7.5) / sqrt(sigma2/20)
+Z
+
+Xbar
+sigma2
+```
+```{r}
+1-pnorm(Z)
+```
+
+**Conclusion**: We fail to reject the null hypothesis $H_0:\mu=7.5$ at significance level $\alpha=0.05$, since our $p$-value is greater than 0.05. We do not have strong evidence that the population mean IMDB Rating is greater than 7.5, so we can not rule out the null hypothesis.
+
+
+```{r}
+sort(c(8,4,5,3,2,1))
+```
+
