@@ -2,9 +2,15 @@
 title: 'ST 411/511 Lab 9: Simple Linear Regression'
 date: March 8, 2019
 output:
+<<<<<<< HEAD
+  html_notebook: default
+  html_document:
+    df_print: paged
+=======
   html_document:
     df_print: paged
   html_notebook: default
+>>>>>>> 01647f5604bb1e67ec8648e6891199c424a766dd
   pdf_document: default
   word_document: default
 ---
@@ -27,7 +33,11 @@ In today's lab we will look at simple linear regression
 - Assessing model assumptions
 - Inference
 
+<<<<<<< HEAD
+As usual, it may be helpful to knit the lab and view in the Viewer pane so that the mathematical notation and formatting are easier to interpret. 
+=======
 As usual, it may be helpful to knit the lab and view in the Viewer pane so that the mathematical notation and formatting are easier to interpret.
+>>>>>>> 01647f5604bb1e67ec8648e6891199c424a766dd
 
 ### Case Study 7.1.1
 

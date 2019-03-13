@@ -1,10 +1,21 @@
 ---
+
+title: "ST511_Project"
+=======
 title: "ST511_Projecr"
+
 output: html_document
 ---
 Introduction:
 
 For this project I have decided to use the IMDB Top 250 Movies database. It contains columns/variables that include Rank, Rating, Title of the movie and the number of Votes.
+
+<<<<<<< HEAD
+**Population**: 250 films that meet the eligibility criteria
+**Variable of Interest**: In this dataset we'll look at the IMDB User Score instead. Possible values are between 0 and 10.
+**Scientific question**: Is the average IMDB rating equal to 7.5 for movies in the top 250 list?
+**Statistical translation: “Is μ = 7.5 ?”
+
 
 ```{r}
 path <- file.path("~", "/Desktop/ST511", "top250.csv" )
@@ -15,18 +26,56 @@ View(imdbmovies)
 
 
 ```{r}
+
+#names(imdbmovies)
+
 names(imdbmovies)
+
 ```
 
 Including an exploratory plot. Here I chose to include a histogram.
 ```{r}
-ggplot(imdbmovies, aes(x=Rating)) + geom_histogram(binwidth=0.1, color="black", alpha=0.9, fill="yellow") + ggtitle("Ratings Histogram") + 
+
+#ggplot(imdbmovies, aes(x=Rating)) + geom_histogram(binwidth=0.1, color="black", alpha=0.9, fill="green") + ggtitle("IMDB Rating") + 
+ggplot(imdbmovies, aes(x=Rating)) + geom_histogram(binwidth=0.1, color="black", alpha=0.9, fill="green") + ggtitle("Ratings Histogram") + 
+
   xlab("Ratings of movies in imdb top 250")
 ```
 
 ```{r}
 var(imdbmovies$Rating)
 ```
+<<<<<<< HEAD
+**Method**: Here I have chosen to do the t test. 
+
+We now take a sample out of this data:
+Let’s randomly sample 20 movies. We will assume that all moviesare equally likely to be selected.
+
+
+```{r}
+#set.seed(411511)
+#samp <- sample(1:nrow(imdbmovies), size=10)
+#samp1 <- imdbmovies$Rating[samp]
+#samp1
+samp1 <- c(8.4, 8.2, 8.3, 8.5, 8.0, 8.2, 8.0, 8.4, 8.1, 8.4)
+#imdbmovies[samp, c(3,2)]
+
+Xbar <- mean(samp1)
+Xbar
+sample_variance <- var(samp1)
+
+tstat <- (Xbar-8.2) / sqrt(sample_variance/10)
+tstat
+
+ #as n = 20
+2*(1-pt(abs(tstat), df=9))
+pt
+
+t.test(samp1, mu=8.2)
+```
+
+Results: Here, I am stating the hypothesis that has been tested.
+=======
 We now take a sample out of this data:
 
 ```{r}
@@ -41,9 +90,36 @@ imdbmovies[samp, c(3,2)]
 
 ```
 
+
 **Null hypothesis**: $H_0:\mu=7.5$. In words: the null hypothesis is that the population mean rating is 7.5.
 
 **Alternative hypothesis**: $H_A:\mu>6.5$. In words: the alternative hypothesis is that the population mean IMDB score is greater than 7.5. This is a one-sided greater alternative hypothesis.
+
+
+**Assesment**: Assess the assumptions/model.
+
+```{r}
+#ggplot(imdbmovies, aes(x=Rating)) +
+  #geom_histogram(binwidth=50) +
+  #facet_wrap(~ Rating)
+
+#hist(imdbmovies)
+
+qqnorm(imdbmovies$Rating)
+```
+
+
+
+1. The statistical independence of the observations within each sample.
+2. The Normality of the underlying population distributions.
+
+To assess assumptions 1 you have to think carefully about how the data were obtained. Typically, data that are collected close together in time and/or space, or data that are collected together in some kind of cluster.
+
+To assess the Normality of the underlying population distributions, you have to take a look at the shapes of the sample distributions and make a judgement call about whether you think the samples could plausibly have come from Normal populations.
+
+
+
+
 
 We now calculate the Z value, i.e the test statistic:
 
@@ -64,10 +140,10 @@ sigma2
 1-pnorm(Z)
 ```
 
+
 **Conclusion**: We fail to reject the null hypothesis $H_0:\mu=7.5$ at significance level $\alpha=0.05$, since our $p$-value is greater than 0.05. We do not have strong evidence that the population mean IMDB Rating is greater than 7.5, so we can not rule out the null hypothesis.
 
 
-```{r}
-sort(c(8,4,5,3,2,1))
-```
+<<<<<<< HEAD
+
 
