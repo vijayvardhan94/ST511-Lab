@@ -1,0 +1,401 @@
+---
+title: 'ST 411/511 Lab 10: Simple Linear Regression Tranformations, Fit Examples, Review'
+date: March 15, 2019
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we will use in this lab
+library(ggplot2)
+library(Sleuth3)
+library(multcomp)
+```
+
+## Outline
+
+In today's lab we will look at transformations in the context of simple linear regression and see some examples of cases where regression is or is not appropriate.
+
+We will then do a short review of main R functions used in this course. This is not an exhaustive review of all topics, but highlights some of the main methods in R.
+
+You may also have time to ask your TAs questions.
+
+# Regression Assumptions
+
+## Case Study 7.2 from *The Statistical Sleuth*
+
+A certain kind of meat processing may begin once the pH in postmortem muscle of a steer carcass has decreased sufficiently. To estimate the timepoint at which pH has dropped sufficiently, 10 steer carcasses were assigned to be measured for pH at one of five times after slaughter.
+
+There are two variables in this data.frame --- *pH* level in postmortem muscle and *Time* after slaughter (in hours). The question of interest has to do with estimating the time at which the *pH* decreases to 6.0 so that the meat can be further processed.
+
+```{r}
+?case0702
+data(case0702)
+ggplot(data = case0702, aes(x=Time, y=pH)) + 
+  geom_point()
+```
+
+It's a little hard to see, but the relationship actually appears to be curvilinear. If we fit the linear regression line (below), we can see that for time 1 and 8 both observations are above the line, while at times 2 and 4 both observations are below the line.
+
+```{r}
+ggplot(data = case0702, aes(x=Time, y=pH)) + 
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+```
+
+We can also see this curvilinear relationship by looking at the residuals.
+
+```{r}
+mod <- lm(pH ~ Time, data=case0702)
+case0702$resid <- mod$resid
+case0702$fit <- mod$fit
+
+ggplot(data = case0702, aes(x=fit, y=resid)) + 
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+```
+
+### Let's try a log transformation on Time and see how that looks:
+
+```{r}
+ggplot(case0702, aes(x=log(Time), y=pH)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+```
+
+It appears that after this transformation, the relationship between mean(pH) and log(Time) can now be assumed to be linear.
+
+### Let's fit this regression model:
+
+```{r}
+mod1 <- lm(pH ~ log(Time), data=case0702)
+summary(mod1)
+```
+
+Take a moment to look over the model summary. What would you conclude for the null hypothesis that $\beta_1=0$? What percentage of variability in pH does log(time) explain?
+
+We can also look at a plot of the fitted values vs. residuals for this model:
+
+```{r}
+case0702$resid1 <- mod1$resid
+case0702$fit1 <- mod1$fit
+
+ggplot(data = case0702, aes(x=fit1, y=resid1)) + 
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+```
+
+This looks better than before!
+
+### How do we interpret this model, where we took a log transform?
+
+Here are a few correct statements we could make:
+
+- "A 1-unit increase in log(Time) is associated with an increase of -0.72566 units in the mean of pH."
+- "A 1-unit increase in log(Time) is associated with a decrease of 0.72566 units in the mean of pH."
+- "We reject the null hypothesis that there is no linear trend between log(Time) and mean pH at significance level $\alpha=0.05$. There is likely a linear trend in the mean of pH as a function of log(Time)."
+
+### Calibration
+
+The question of interest with the *pH* data has to do with *calibration*, or finding that value of *Time* that corresponds to a given value of *pH*. (I.e., we want to estimate the $X$ that results in $Y=Y_0$.) In this case the researchers were interested in estimating the *Time* at which *pH* falls below 6.0. If you look at the plot above, it appears that that time might be around 1.4 log(hours). So our guesstimate for time, transformed back from log(hours) to hours, would be around 4 hours:
+
+```{r}
+## 1.4 = log(hours), so e^1.4 = e^log(hours) = hours
+exp(1.4)
+```
+
+Let's see how we would calculate the exact value rather than just eyeballing the plot. We'll follow the procedure laid out in Section 7.4.4 in *The Statistical Sleuth* to obtain an estimate and confidence interval for this time.
+
+1. I'll invert the estimated simple linear regression model to find an estimate of the log(Time) when the mean(pH) is 6.0. Here are the regression coefficient estimates from the *mod1* object:
+
+```{r}
+bhat <- coefficients(mod1)
+bhat <- as.numeric(bhat)
+bhat
+```
+
+So the estimated regression model is:
+
+$\hat{\mu}\{pH|\log(Time)\} = 6.94 - 0.726\times \log(Time)$
+
+If I substitute 6.0 for the left hand side of this equation, then I can solve for $\log(Time)$:
+
+$6.0 = 6.94 - 0.726\times \log(Time)$
+
+```{r}
+estimate <- (6.0 - bhat[1])/bhat[2]
+estimate
+```
+
+So, the estimated time for the postmortem muscle to reach a pH of 6.0 is $\hat{X} = 1.36 \log(hours)$, or 
+
+```{r}
+exp(estimate)
+```
+
+3.88 hours. (So our visual guess of 4 was pretty good.)
+
+2. Now, we need to calculate the standard error that accompanies this estimate. There are two formulae for this given on p. 194 of the *The Statistical Sleuth*. We'll use the first one that has to do with finding the $X$ value at which the mean $Y$ value is a certain level:
+
+$SE(\hat{X}) = \frac{SE(\hat{\mu}\{Y|\hat{X}\})}{|\hat{\beta}_1|}$
+
+Here are the calculations:
+
+```{r}
+out <- summary(mod1)
+n <- nrow(case0702)
+
+SE_mu <- out$sigma * sqrt(1/n + (estimate-mean(log(case0702$Time)))^2/((n-1)*var(log(case0702$Time))))
+
+SE_Xhat <- SE_mu/abs(bhat[2])
+SE_Xhat
+```
+
+3. Finally, I'll put all of this together, and obtain a 95% confidence interval for the time needed for the mean(pH) to get to 6.0:
+
+```{r}
+CI <- estimate + c(-1,1)*qt(0.975,n-2)*SE_Xhat
+CI
+
+exp(CI)
+```
+
+> The estimated time for the mean pH of postmortem muscle to reach 6.0 is 3.88 hours, with an accompanying 95% confidence interval ranging from 3.56 hours to 4.22 hours.
+
+
+
+
+
+# Examples of fit
+
+This section contains several examples of regression and when it would and would not be appropriate. For each scenario, I simulate $X$ and $X$ and produce 4 panel outcomes for you to look at after you run the code chunk:
+
+1. The correlation between $X$ and $Y$ as well as the `lm()` model summary.
+2. Plot of the data with the regression line overlaid.
+3. Plot of the fitted values vs. residuals from the model.
+4. Normal quantile-quantile plot for the residuals.
+
+### Good case
+
+```{r}
+x <- runif(500, min=-10, max=10)
+y <- x + rnorm(500)
+cor(x, y)
+
+df <- data.frame(x, y)
+
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+
+m <- lm(y ~ x, data=df)
+summary(m)
+
+df$fit <- m$fit
+df$resid <- m$resid
+
+ggplot(df, aes(x=fit, y=resid)) +
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+
+ggplot(df, aes(sample=resid)) +
+  stat_qq()
+```
+
+## Still a good example
+
+```{r}
+x <- runif(500, min=-10, max=10)
+y <- -1*x + rnorm(500, sd=10)
+cor(x, y)
+
+df <- data.frame(x, y)
+
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+
+m <- lm(y ~ x, data=df)
+summary(m)
+
+df$fit <- m$fit
+df$resid <- m$resid
+
+ggplot(df, aes(x=fit, y=resid)) +
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+
+ggplot(df, aes(sample=resid)) +
+  stat_qq()
+```
+
+## Regression still valid, but no linear relation between x and y
+
+```{r}
+x <- runif(500, min=-10, max=10)
+y <- runif(500, min=-10, max=10)
+cor(x, y)
+
+df <- data.frame(x, y)
+
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+
+m <- lm(y ~ x, data=df)
+summary(m)
+
+df$fit <- m$fit
+df$resid <- m$resid
+
+ggplot(df, aes(x=fit, y=resid)) +
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+
+ggplot(df, aes(sample=resid)) +
+  stat_qq()
+```
+
+## Regression not valid
+
+```{r}
+x <- runif(500, min=-10, max=10)
+y <- x^2 + rnorm(500, sd=5)
+cor(x, y)
+
+df <- data.frame(x, y)
+
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+
+m <- lm(y ~ x, data=df)
+summary(m)
+
+df$fit <- m$fit
+df$resid <- m$resid
+
+ggplot(df, aes(x=fit, y=resid)) +
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+
+ggplot(df, aes(sample=resid)) +
+  stat_qq()
+```
+
+
+
+# Review
+
+## t-tests
+
+We can perform a variety of $t$-tests using the `t.test()` function with different options:
+
+- `mu=0` or some other hypothesized value
+- `paired=TRUE` or `paired=FALSE`
+- `alternative="two.sided"` or `alternative="less"` or `alternative="greater"`
+- `var.equal=TRUE` or `var.equal=FALSE`
+- `conf.level=0.95` or some other number
+
+We looked at the Finch data (case study 2.1), which contains the beak depth measurements on two samples of finches. It's always a good idea to start with an exploratory plot.
+
+```{r}
+data(case0201)
+ggplot(case0201, aes(x=factor(Year), y=Depth)) +
+  geom_boxplot(fill="lightblue") +
+  labs(x="Year")
+```
+
+And then do the formal testing procedure if you believe the necessary assumptions have been met:
+
+```{r}
+t.test(Depth ~ Year, data=case0201)
+```
+
+Which $t$-test is this doing? Answer: Welch's with a two-sided alternative.
+
+Think about how you could modify the code to do an equal variance test, or to test a one-sided alternative hypothesis.
+
+## Non-parametric two-sample tests
+
+We also saw how to use the `wilcox.test()` function to perform both the rank-sum and signed-rank tests. Suppose we wanted to do a Wilcoxon rank-sum test on the Finch data:
+
+```{r}
+wilcox.test(Depth ~ Year, data=case0201)
+```
+
+Does this result agree with the $t$-test result? Yes, both the $p$-values are very small -- but the tests are technically testing two different things, so it would also have been fine if the results had not been the same.
+
+Think about how you could modify the code to test a one-sided alternative hypothesis.
+
+## ANOVA
+
+When we have $I>2$ groups, we could consider using analysis of variance to test whether or not all the population group means are the same (assuming equal variance in the different groups).
+
+We looked at the longevity case study (5.1):
+
+```{r}
+data(case0501)
+ggplot(case0501, aes(x=Diet, y=Lifetime)) +
+  geom_boxplot(fill="lightblue")
+```
+
+The equal variance assumption looks okay, so let's proceed with the ANOVA:
+
+```{r}
+anova(lm(Lifetime ~ Diet, data=case0501))
+```
+
+In this case, the reference distribution for the test statistic is an $F$ distribution with 5 numerator and 343 denominator degrees of freedom. The $p$-value is highly significant, so we would reject the null hypothesis that all the population group means are the same.
+
+## Multiple Comparisons
+
+We saw a variety of multiple comparison adjustment methods. Here's how we would do the Tukey-Kramer adjustment in the context of the longevity case study we just did the analysis of variance on:
+
+
+```{r}
+mod <- lm(Lifetime ~ Diet, data=case0501)
+tk <- glht(mod, linfct=mcp(Diet="Tukey"))
+summary(tk)
+```
+
+After accounting for the fact that we are doing multiple tests, there are still many pairwise comparisons that show significant differences. Do these groups match up with what you'd expect from looking at the boxplot?
+
+## Simple linear regression
+
+Here's an example comparing crab claw size and force (`ex0722`). We will use the height of the claw to predict the closing strength (force) of the claw. Again, exploratory plots are useful to assess assumptions.
+
+```{r}
+data(ex0722)
+ggplot(ex0722, aes(x=Height, y=Force)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)
+```
+
+The data seem to be linear. Let's fit the regression model:
+
+```{r}
+mod_crab <- lm(Force ~ Height, data=ex0722)
+summary(mod_crab)
+```
+
+We reject the null hypothesis that the slope $\beta_1$ is 0, and conclude that we do have evidence for a linear trend between height and mean claw force. In particular, a 1 unit increase in claw height is linearly associated with a 2.63 unit increase in mean claw force.
+
+We can also look at a plot of the residuals vs. fitted values to assess the assumptions of the model:
+
+```{r}
+ex0722$fit <- mod_crab$fit
+ex0722$resid <- mod_crab$resid
+
+ggplot(ex0722, aes(x=fit, y=resid)) +
+  geom_point() +
+  geom_hline(yintercept=0, color="red")
+```
+
+I would look at these two plots together and see that there does appear to be some non-constant variance. So perhaps we should consider a transformation. I leave the code to you to think about how we would do the transformation.
